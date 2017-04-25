@@ -1,45 +1,72 @@
 #!~/bin/bash
-
-#===============================================================================
+#==========================
+#=====================================================
 ##
 ##         FILE:  Delitions_pipeline.sh
 ##
 ##        USAGE:  bash Delitions_pipeline.sh "File path here" "Path to sample names, one per line" "path to output" "threads" "ram" "SNP_and_samll_indel_calling = Y | N" "bed file with indel regions of intrest"
 ##
-##  DESCRIPTION:  map with bwa and call snps
+##  DESCRIPTION:  map with NOVO
 ##
 ##      OPTIONS:  SNP_calling = "Y | N"
 ## REQUIREMENTS:  FastQC, Trimmomatic, bwa, picard, samtools, bedtools, GenomeAnalysisTK, delly, pindel, bcftools, java-1.8, java runtime environment, lumpy, vcf-tools, R.3.3.0 (packages: data.table, dplyr, VariantAnnotation)
 ##         BUGS:  ---
 ##        NOTES:  Currently inefficient with much convoluted code, attempted not to leave bash as much as possible to make it easier to understand, kmer snp approach may be better depending on what you doing
-##       AUTHOR:  Jason Limberis, lmbjas002@myuct.ac.za
-##      COMPANY:  UCT
-##      VERSION:  0.4
-##      CREATED:  29/06/2016
+##       AUTHOR:  Jason Limberis, lmbjas002@myuct.ac.za James Gallant
+##      COMPANY:  UCT Stellenbosch VU Amsterdam
+##      VERSION:  2.0
+##      CREATED:  17/02/2017
 ##     REVISION:  ---
-##         TODO:  Kmer indels, fix merging of caller reslts, make graphs for de novo outputs and calculate breakpoints, move stuff around and multithread it, remove vcf-tools depencancy and just do with awk
+##         TODO:  Recode for novo, troubleshoot
 ##===============================================================================
-
 # Dependancies and their paths
 # setup environment
 #module load java/jdk-1.8
-export PATH=/home/user/Desktop/programs/FastQC:$PATH
-export PATH=/home/user/Desktop/programs/Trimmomatic-0.36/trimmomatic-0.36.jar:$PATH
-export PATH=/home/user/Desktop/programs/picard:$PATH
+export PATH=/home/user/Documents/genomics/programs/FastQC:$PATH
+export PATH=/home/user/Documents/genommics/programs/Trimmomatic-0.36/trimmomatic-0.36.jar:$PATH
+export PATH=/home/user/Documents/genomics/programs/picard:$PATH
 #export PATH=~/bin/bwa-0.7.12:$PATH
 #export PATH=~/bin/samtools-1.3.1:$PATH
 #export PATH=~/bin/bedtools~/bin:$PATH
 #export PATH=~/bin/GenomeAnalysisTK-3.3-0:$PATH
 export PATH=~/bin~/bin/delly/src:$PATH
-export PATH=/home/user/Desktop/Deletions_only_pipeline/pindel:$PATH
-#export PATH=~/bin/bcftools:$PATH
-#export PATH=/home/lmbjas002/bin/lumpy-sv/bin:$PATH
+export PATH=/home/user/Documents/genomics/Deletions_only_pipeline/pindel:$PATH
+#export PATH=/home/user/Documents/genomics/programs/
+export PATH=/home/user/Documents/genomics/programs/lumpy-sv:$PATH
 #export PATH=/home/lmbjas002/bin/bedtools/bin:$PATH
-export PATH=/home/user/Desktop/Deletions_only_pipeline/delly:$PATH
+export PATH=/home/user/Documents/genomics/Deletions_only_pipeline/delly:$PATH
+export PATH=/home/user/Documents/genomics/programs/bam2fastq-1.1.0:$PATH
+export PATH=/home/user/Documents/genomics/programs/novocraft:$PATH 
+export PATH=/home/user/Documents/genomics/programs/svtyper-master:$PATH
+export PATH=/home/user/Documents/genomics/programs/SOAPdenovo2:$PATH
+
+
+
 # awk
 # R
 # R packages:data.table, dplyr, tidyr
-
+#Message for usage of the program
+if  [ $1 == -h ]; 
+then 
+    echo "Welcome to the dark side of TB genomics. We are team Sam, let us be your guide."
+    echo
+    echo "Description: Targeted calling of structural variants using a split read approach"
+    echo
+    echo "Usage: <FastQ files> <Sample names> <output> <threads> <ram> <GATK SNP's>"
+    echo
+    echo
+    
+            echo "<FastQ fles>                    path to raw reads, rename to <samplename_R1_001.fastq.gz>"
+            echo "<Sample names>                  path to text file with sample names, one per line."
+            echo "<output>                        path to output."
+            echo "<threads>                       Amount of cores to allocate (default is 6)."
+            echo "<Ram>                           Amount of ram to allocate (default is 8)."
+            echo "<GATK SNP's>                    SNP calling (Y or N)."
+           
+    echo
+    exit 0
+fi
+#should start here
 Script_dir=$(dirname "$0") #get directory where script is
 # Script_dir=#"$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 F_dir="$1" #"File path here"
@@ -52,14 +79,20 @@ threads="$4"
 ram="$5"
 ulimit -m $(( $ram * 1024))
 SNP_calling="$6"
-Ref_name="${Script_dir}/references/CDC1551.fasta" #path to fasta
+Ref_name="${Script_dir}/references/CDC1551/CDC1551.fasta" #path to fasta
+ref_index="${Script_dir}/references/CDC1551/CDC1551.ndx"
+# echo -e "test\t2000\t3000" > temp_test
+#region_of_interst="$7"
+#echo $region_of_interst
 
 
 # echo -e "test\t2000\t3000" > temp_test
+# echo -e "test\t2000\t3000" > temp_test
 Indels_of_interst="$7"
+echo $Indels_of_interst
 #this is a comma separated file with the indel name, the start position and the end position
 
-mkdir "$Out_dir_in" #James:error message here file exists probably due to already defining Out_dir_in as path to output in line47
+mkdir "$Out_dir_in" 
 
 #####################################################################################
 ##################################prepare reference##################################Fa
@@ -83,509 +116,416 @@ while read sample
   mkdir "$Temp"
   Data="${Out_dir}/Data"
   mkdir "$Data"
+  denovo="${Out_dir}/denovo"
+  mkdir "$denovo"
 
-  #fastQC sequence stats     James: It seems fastQC does not work fastqc "$R2unpaired" -o "$Data"
+
+  #fastQC sequence stats     James: It seems fastQC does not work fastqc "$R2unpaired" -o "$Data"  James: Fastqc does not run, cannot find files I do not know how to fix this
   fastqc "$R1" -o "$Data"
   fastqc "$R2" -o "$Data"
 
-  #Trim sequences and clip adapters - Paired End
-  java -Xmx${ram}g -jar /home/user/Desktop/programs/Trimmomatic-0.36/trimmomatic-0.36.jar PE -phred33 -threads "$threads" \
+  #Trim sequences and clip adapters - Paired End        James: Trimmomatic tests out
+  java -Xmx"${ram}g" -jar /home/user/Documents/genomics/programs/Trimmomatic-0.36/trimmomatic-0.36.jar PE -phred33 -threads "$threads" \
       "$R1" "$R2" \
       "${Temp}/${sample}_forward_paired.fq.gz" "${Temp}/${sample}_forward_unpaired.fq.gz" \
       "${Temp}/${sample}_reverse_paired.fq.gz" "${Temp}/${sample}_reverse_unpaired.fq.gz" \
-      ILLUMINACLIP:"/home/user/Desktop/programs/Trimmomatic-0.36/adapters/TruSeq2-PE.fa":2:30:15 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:"$Trim" MINLEN:30
+      ILLUMINACLIP:"/home/user/Documents/genomics/programs/Trimmomatic-0.36/adapters/TruSeq2-PE.fa":2:30:15 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:"$Trim" MINLEN:30
   #Remove adapters
   #Remove leading low quality or N bases (below quality 3)
   #Remove trailing low quality or N bases (below quality 3)
   #Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15
   #Drop reads below the 30 bases long
+  
 
-  #set some variable names
-  R1paired="${Temp}/${sample}_forward_paired.fq.gz"
-  R2paired="${Temp}/${sample}_reverse_paired.fq.gz"
-  R1unpaired="${Temp}/${sample}_forward_unpaired.fq.gz"
-  R2unpaired="${Temp}/${sample}_reverse_unpaired.fq.gz"
-
-  #can run fastQC again here or only ehere..
-  #fastQC sequence stats                        James:See previous comment on fastQC
-  fastqc "$R1paired" -o "$Data"
-  fastqc "$R2paired" -o "$Data"
-  fastqc "$R1unpaired" -o "$Data"
-  fastqc "$R2unpaired" -o "$Data"
-
+  rm "${Temp}/${sample}_forward_unpaired.fq.gz"
+  rm "${Temp}/${sample}_reverse_unpaired.fq.gz"
+  
+  #fastQC sequence stats                        
+  fastqc "${Temp}/${sample}_forward_paired.fq.gz" -o "$Data"
+  fastqc "${Temp}/${sample}_reverse_paired.fq.gz" -o "$Data"
+  
   ##############
-  #BWA mapping##
+  #novo mapping##
   ##############
-
-  #if you want to use Smalt instead we can do that, jsut a few things to edit here, I dont know about Novo as I havent used it
-  #can also discard the singeltons and to increase the speed
-
-  #Map to reference using BWA
-  #paired ends
-  bwa mem -t "$threads" -c 100 -R "@RG\\tID:${sample}\\tSM:${sample}\\tPL:Illumina" -M -T 50 "$Ref_name" "$R1paired" "$R2paired" > "${Temp}/pairedBWA.sam"
-  bwa mem -t "$threads" -c 100 -R "@RG\\tID:${sample}\\tSM:${sample}\\tPL:Illumina" -M -T 50 "$Ref_name" "$R1unpaired" > "${Temp}/unpaired_FBWA.sam"
-  bwa mem -t "$threads" -c 100 -R "@RG\\tID:${sample}\\tSM:${sample}\\tPL:Illumina" -M -T 50 "$Ref_name" "$R2unpaired" > "${Temp}/unpairedRBWA.sam"
-  #-T dont output with alignment score lower than 50
-  #-M Mark shorter split hits as secondary (for Picard compatibility)
-  #it appear as if the -M changes one of the flags, this results in split reads not being detected by pindel!!
-  #-c Discard a MEM if it has more than INT occurence in the genome. This is an insensitive parameter
-
-  #additional settings to consider
-  # -w INT	Band width. Essentially, gaps longer than INT will not be found. Note that the maximum gap length is also affected
-  # by the scoring matrix and the hit length, not solely determined by this option. [100]
-  # -O INT	Gap open penalty. [6]
-  # -E INT	Gap extension penalty. A gap of length k costs O + k*E (i.e. -O is for opening a zero-length gap). [1]
-
-  #merge the above files into one for further use
-  java -Xmx"${ram}"g -jar /home/user/Desktop/programs/picard.jar MergeSamFiles \
-      INPUT="${Temp}/pairedBWA.sam" \
-      INPUT="${Temp}/unpaired_FBWA.sam" \
-      INPUT="${Temp}/unpairedRBWA.sam" \
-      OUTPUT="${Temp}/${sample}_BWA.sam" \
-      SORT_ORDER=coordinate
-
-  #we can actually subset the bam file here to speed things up
-  #here we can subset the bam file if you want to include only your regions, this will make the rest faster
-  # samtools view -h "${Temp}/${sample}.sam" chrom:start-end > "${Temp}/${sample}_subset.sam"
-
-#   #validate and clean up
-#   #you can take this out if you want                  James: I like the idea I'm gonna comment back in and also change the path
-   java -Xmx"${ram}"g -jar "/home/user/Desktop/programs/picard.jar" ValidateSamFile \
-       INPUT= "${Temp}/${sample}_BWA.sam" \
+  
+  # untar files first
+  gunzip "${Temp}/${sample}_forward_paired.fq"
+  gunzip "${Temp}/${sample}_reverse_paired.fq"
+  
+  novoalign -d "$ref_index" -f "${Temp}/${sample}_forward_paired.fq" "${Temp}/${sample}_reverse_paired.fq" -o SAM "@RG\\tID:${sample}\\tSM:${sample}\\tPL:Illumina" 2> "${Data}/${sample}_novo_stats.novodist"  > "${Temp}/${sample}_novo_paired.sam" 
+  
+  #rezip files
+  mv "${Temp}/${sample}_forward_paired.fq" "${Data}/${sample}_forward_paired.fq"  
+  mv "${Temp}/${sample}_reverse_paired.fq" "${Data}/${sample}_reverse_paired.fq"
+  
+  #validate and cleanup
+  java -Xmx"${ram}"g -jar "/home/user/Documents/genomics/programs/picard.jar" ValidateSamFile \
+       INPUT= "${Temp}/${sample}_novo_paired.sam" \
        OUTPUT="${Data}/${sample}_sam_validate.txt"
-# #write something to check validation and stop if wrong
-
-  rm "${Temp}/pairedBWA.sam"
-  rm "${Temp}/unpaired_FBWA.sam"
-  rm "${Temp}/unpairedRBWA.sam"
-
-  #convert SAM into sorted BAM via picard
-  java -Xmx"${ram}"g -jar /home/user/Desktop/programs/picard.jar SortSam \
-      INPUT="${Temp}/${sample}_BWA.sam" \
-      OUTPUT="${Temp}/${sample}_BWA_sorted.bam" \
+       
+  #convert SAM into BAM and sort
+  java -Xmx"${ram}"g -jar /home/user/Documents/genomics/programs/picard.jar SortSam \
+      INPUT="${Temp}/${sample}_novo_paired.sam" \
+      OUTPUT="${Temp}/${sample}_sorted.bam" \
       SORT_ORDER=coordinate \
       VALIDATION_STRINGENCY=LENIENT
-
-  rm "${Temp}/${sample}_BWA.sam"
-
-  #Mark Duplicates and perform local realign around indels with PICARD
-  #if you have a list of known INDELS, put them into a single vcf 4.2 file and feed the in below - available.vcf
-
-
-  #Index using samtools
-  samtools index "${Temp}/${sample}_BWA_sorted.bam"
-
-  #validate SAM or BAM file with PICARD
-  # java -Xmx"${ram}"g -jar picard.jar ValidateSamFile \
-  # I="${Temp}/${sample}_sorted.bam" \
-  # O="${Data}/${sample}_sorted.bam.txt"
-
-  #Mark PCR duplicates with PICARD
-  java -Xmx"${ram}"g -jar /home/user/Desktop/programs/picard.jar MarkDuplicates \
-      INPUT="${Temp}/${sample}_BWA_sorted.bam" \
-      OUTPUT="${Temp}/${sample}_BWA_sorted_dedup.bam" \
+      
+  rm "${Temp}/${sample}_novo_paired.sam"
+  
+  #index fbam file 
+  samtools index "${Temp}/${sample}_sorted.bam" 
+  
+  #Mark PCR Duplicates 
+  java -Xmx"${ram}"g -jar /home/user/Documents/genomics/programs/picard.jar MarkDuplicates \
+      INPUT="${Temp}/${sample}_sorted.bam" \
+      OUTPUT="${Temp}/${sample}_sorted_dedup.bam" \
       VALIDATION_STRINGENCY=LENIENT \
       REMOVE_DUPLICATES=TRUE \
       ASSUME_SORTED=TRUE \
-      M="${Temp}/${sample}_BWA_sorted_dedup.bam.txt"
-
+      M="${Temp}/${sample}_sorted_dedup.bam.txt"
+      
   #Perform local realignment around indels to correct mapping-related artifacts with GATK
   #generate index  with picard
-  java -Xmx"${ram}"g -jar /home/user/Desktop/programs/picard.jar BuildBamIndex \
-      I="${Temp}/${sample}_BWA_sorted_dedup.bam" \
+  java -Xmx"${ram}"g -jar /home/user/Documents/genomics/programs/picard.jar BuildBamIndex \
+      I="${Temp}/${sample}_sorted_dedup.bam" \
       VALIDATION_STRINGENCY=LENIENT
-
-  #Create a target list of intervals to be realigned with GATK James: Runs if I remove ram allocation
-  java -jar ~/home/user/Desktop/programs/GenomeAnalysisTK.jar \  
-      -T RealignerTargetCreator \
-      -R "${Ref_name}" \
-      -I "${Temp}/${sample}_BWA_sorted_dedup.bam" \
-      -o "${Temp}/${sample}_BWA_sorted_dedup.bam.list"
+      
+  #Create a target list of intervals to be realigned with GATK
+  java -jar /home/user/Documents/genomics/programs/GenomeAnalysisTK.jar -T  RealignerTargetCreator -R "${Ref_name}" -I "${Temp}/${sample}_sorted_dedup.bam" -o "${Temp}/${sample}_sorted_dedup.bam.list"    
       #-known indels if available.vcf
-
-  #Perform realignment of the target intervals (base quality score recalibrations)
-  java -Xmx"${ram}"g -jar /home/user/Desktop/programs/GenomeAnalysisTK.jar \
+  
+  #Realignment of target intervals        
+  java -Xmx"${ram}"g -jar /home/user/Documents/genomics/programs/GenomeAnalysisTK.jar \
       -T IndelRealigner \
       -R "${Ref_name}" \
-      -I "${Temp}/${sample}_BWA_sorted_dedup.bam" \
-      -targetIntervals "${Temp}/${sample}_BWA_sorted_dedup.bam.list" \
-      -o "${Temp}/${sample}_BWA_sorted_dedup_realigned.bam"
-
-  #sort file with samtools
-  #seems delly doesnt like this so sort with PICARD
-  samtools sort -@ $threads -m "${ram}g" -O "bam" -T "working" -o "${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" "${Temp}/${sample}_BWA_sorted_dedup_realigned.bam"
-#  java -jar ~/bin/picard/picard.jar SortSam \
-#	I="${Temp}/${sample}_BWA_sorted_dedup_realigned.bam" \
-#	O="${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" \
-#	SORT_ORDER=coordinate
-
-  #index the sorted file
-  samtools index "${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted.bam"
-  mv "${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam"
-  mv "${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted.bam.bai" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam.bai"
-  #delete some temp files
-  rm -r "$Temp"
-
-  # #make bam subset for viewing later
-  # samtools view -b "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':2620000-2800000 > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset.bam"
-
-  #get coverage in your region
-    #line two takes only those regions of <=10 and three is the subset range
-    # bedtools genomecov -ibam "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" -bga |
-    # awk '{ if ($2 >= 2000000 && $2 <= 3000000 && $4 <10) print $0 }' > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.coverage"
-    #-max 20
-    # bedtools genomecov -ibam "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset.bam" -bga |
-    #   awk '{ if ($4 < 10) print $0 }' > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.coverage"
-
-    # #average depth coverage region
-    # samtools depth "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset.bam" |
-    # awk '{sum+=$3} END { print "Average depth accross selected region = ",sum/NR}' >> "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.average_coverage"
-
-    #average depth coverage of genome
-    # samtools depth "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" |
-    # awk '{sum+=$3} END { print "Average depth accross entire genome = ",sum/NR}' >> "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.average_coverage"
-
-  #get coverage at all sites in genome
-  samtools depth "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.coverage"
-  #this will be quite a big file, we could make it a bed file with ranges and greatly reduce the size but that will make you time in R more complicated
-
-
-  if [[ $SNP_calling == "Y" || $SNP_calling == "y" ]]
-  then
+      -I "${Temp}/${sample}_sorted_dedup.bam" \
+      -targetIntervals "${Temp}/${sample}_sorted_dedup.bam.list" \
+      -o "${Temp}/${sample}_sorted_dedup_realigned.bam"
+      
+  #Sort with Samtools
+  samtools sort -@ $threads -m "${ram}g" -O "bam" -T "working" -o "${Temp}/${sample}_sorted_dedup_realigned_sorted.bam" "${Temp}/${sample}_sorted_dedup_realigned.bam"
+  
+  #New index, sort with samtools 
+  samtools index "${Temp}/${sample}_sorted_dedup_realigned_sorted.bam" 
+  
+  #Clean up
+  mv "${Temp}/${sample}_sorted_dedup_realigned_sorted.bam" "${Data}/${sample}_sorted_dedup_realigned_sorted.bam"  
+  mv "${Temp}/${sample}_sorted_dedup_realigned_sorted.bam.bai" "${Data}/${sample}_sorted_dedup_realigned_sorted.bam.bai"
+  
+  
+  #############################################################################################################################
+  #Snp calling has to be added here, will skip for now
+  ############################################################################################################################# 
+  
+       if [[ $SNP_calling == "Y" || $SNP_calling == "y" ]]
+       then
       # ##GATK INDEL small indels and SNPs                                                              James: 2 error messages from SNP caller but it runs: Check unified genotyper parameters
-      #HaplotypeCaller - better at calling indels
-        java -Xmx"${ram}"g -jar /home/user/Desktop/programs/GenomeAnalysisTK.jar \
+      #HaplotypeCaller - better at calling indels B
+        java -Xmx"${ram}"g -jar /home/user/Documents/genomics/programs/GenomeAnalysisTK.jar \
             -T HaplotypeCaller \
             -ploidy 1 \
             -R "${Ref_name}" \
-            -I "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" \
+            -I "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" \
             -stand_emit_conf 10 \
             -stand_call_conf 30 \
             --genotyping_mode DISCOVERY \
             -o "${Data}/${sample}_raw_variants_GATK_haplotype_caller.vcf"
-            # -L targets.interval_list
-      #
-      #       ##or, some people use this as its slightly better at calling small deletions but its slower and worse at SNP calling James: Why not both? We can maybe merge the files later?
-      #
-         java -Xmx"${ram}"g -jar /home/user/Desktop/programs/GenomeAnalysisTK.jar \
-           -nt "${threads}" \
-           -T UnifiedGenotyper \
-           -R "${Ref_name}" \
-           -I "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" \
-           -ploidy 1 \
-           -glm INDEL \
-           -stand_emit_conf 10 \
-           -stand_call_conf 30 \
-           -o "${Data}/${sample}_raw_variants_GATK_unified_genotyper.vcf"
-
-        #samtools SNP and indel calling
-        depth_cov=$(cat "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.coverage" |  awk '{sum+=$3} END { print sum/NR}')
+            # -L targets.interval_list for subset
+      
+        #get depth 
+        samtools depth "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" > "${Data}/${sample}_sorted_dedup_realigned_sorted.coverage"
+        ##samtools SNP and indel calling
+        depth_cov=$(cat "${Data}/${sample}_sorted_dedup_realigned_sorted.coverage" |  awk '{sum+=$3} END { print sum/NR}')
         depth_cov=${depth_cov%.*}
-        samtools mpileup -B -Q 20 -d $((depth_cov*2)) -C 50 -ugf "$Ref_name" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" 2> "${Data}/${sample}_pileup.log" | /bin/bcftools/bcftools call -vc -Ob --threads "$threads" > "${Data}/${sample}.raw.bcf"
-        #--ploidy "X"
-        bcftools view "${Data}/${sample}.raw.bcf" | vcfutils.pl varFilter -d 10 -D $depth_cov > "${Data}/${sample}_raw_variants_Samtools_cons_caller.vcf"
+        samtools mpileup -B -Q 20 -d $((depth_cov*2)) -C 50 -ugf "${Ref_name}" "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" 2> "${Data}/${sample}_pileup.log" | /bin/bcftools/bcftools call -vc -Ob --threads "$threads" > "${Data}/${sample}.raw.bcf"
+        #--ploidy "X" James: I get this as well shoudld we state --ploidy 1
+        /bin/bcftools/bcftools view "${Data}/${sample}.raw.bcf" | /bin/bcftools/vcfutils.pl varFilter -d 10 -D $depth_cov > "${Data}/${sample}_raw_variants_Samtools.vcf"
+        
+        #remove unwanted stuff
         rm "${Data}/${sample}.raw.bcf"
-        #rm "${Data}/${sample}_pileup.log"
+        rm "${Data}/${sample}_sorted_dedup_realigned_sorted.coverage"
 
       ##########################################
-      ##take intersection of GATK and samtools##
+      ##take intersection of GATK and samtools use bcftools under path /bin/bcftools/bcftools
+      ## 
       ##########################################
-      bgzip "${Data}/${sample}_raw_variants_Samtools_cons_caller.vcf"
-      tabix "${Data}/${sample}_raw_variants_Samtools_cons_caller.vcf.gz"
+      
+      #this might have a problem with GATK
+      bgzip "${Data}/${sample}_raw_variants_Samtools.vcf"
+      tabix "${Data}/${sample}_raw_variants_Samtools.vcf.gz"
       bgzip "${Data}/${sample}_raw_variants_GATK_haplotype_caller.vcf"
       tabix "${Data}/${sample}_raw_variants_GATK_haplotype_caller.vcf.gz"
+      
+     
 
       #can filter here -e is exclude sites for which the expression is TRUE
-      bcftools filter -e "QUAL<30 && MIN(DP)<10" -O z -o "${Data}/${sample}_raw_variants_Samtools_cons_caller.filt.vcf.gz" "${Data}/${sample}_raw_variants_Samtools_cons_caller.vcf.gz"
-      bcftools filter -e "QUAL<30 && MIN(DP)<10" -O z -o "${Data}/${sample}_raw_variants_GATK_haplotype_caller.filt.vcf.gz" "${Data}/${sample}_raw_variants_GATK_haplotype_caller.vcf.gz"
+      /bin/bcftools/bcftools filter -e "QUAL<30 && MIN(DP)<10" -O z -o "${Data}/${sample}_raw_variants_Samtools.filt.vcf.gz" "${Data}/${sample}_raw_variants_Samtools.vcf.gz"
+      /bin/bcftools/bcftools filter -e "QUAL<30 && MIN(DP)<10" -O z -o "${Data}/${sample}_raw_variants_GATK_haplotype_caller.filt.vcf.gz" "${Data}/${sample}_raw_variants_GATK_haplotype_caller.vcf.gz"
 
-      tabix "${Data}/${sample}_raw_variants_Samtools_cons_caller.filt.vcf.gz"
+      tabix "${Data}/${sample}_raw_variants_Samtools.filt.vcf.gz" 
       tabix "${Data}/${sample}_raw_variants_GATK_haplotype_caller.filt.vcf.gz"
       
       #JAmes:removed --threads since it interferes with options    
-      bcftools isec -n 2 -O z "${Data}/${sample}_raw_variants_Samtools_cons_caller.filt.vcf.gz"  "${Data}/${sample}_raw_variants_GATK_haplotype_caller.filt.vcf.gz" -o "${Data}/${sample}_intersection_vcfs"
+      /bin/bcftools/bcftools isec -n 2 -O z "${Data}/${sample}_raw_variants_Samtools.filt.vcf.gz" "${Data}/${sample}_raw_variants_GATK_haplotype_caller.filt.vcf.gz" -o "${Data}/${sample}_intersection.vcf"
+      
+      
+    
+      
+      fi
 
-  fi
+  #################################################################################################################################
+  #coverrage 
+  #################################################################################################################################
+ 
+#get coverage over the entire genome, can use this for circos plots later
 
-  #now we look for large deletions using split read approaches
-  #this will get your mean insert size to be fed into the program
-  java -Xmx"${ram}"g -jar /home/user/Desktop/programs/picard.jar CollectInsertSizeMetrics \
-      I="${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" \
+  samtools view -b "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" | genomeCoverageBed -bga -ibam stdin -g "${Ref_name}" > "${Data}/${sample}.all_coverage"
+
+#this will get coverage from bedtools and take everythinh that has less than 10 reads into a file
+  samtools view -b "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" | genomeCoverageBed -bga -ibam stdin -g "${Ref_name}" |  awk '{if ($4 < 10) {printf ("%d\t%d\n",$3,$4);}}' > "${Data}/${sample}.low_coverage"
+
+#get breakpoints i.e. zero coverage
+  samtools view -b "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" | genomeCoverageBed -bga -ibam stdin -g "${Ref_name}" |  awk '{if ($4 < 1) {printf ("%d\t%d\n",$3,$4);}}' > "${Data}/${sample}.zero_coverage"
+
+#average depth coverage of genome
+  samtools depth "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" | awk '{sum+=$3} END { print "Average depth accross entire genome = ",sum/NR}' >> "${Data}/${sample}.average_coverage"
+  
+#Split reads for large deletions
+  #Lumpy, Delly, Pindel
+  
+  ##############################################################################################################################
+  #Pindel
+  #to do: Add looking at subset with -C, -J
+  ##############################################################################################################################
+  
+  #Picard to collect insert metrics for the mean insert size that we willl need to run pindel
+  java -Xmx"${ram}"g -jar /home/user/Documents/genomics/programs/picard.jar CollectInsertSizeMetrics \
+      I="${Data}/${sample}_sorted_dedup_realigned_sorted.bam" \
       O="${Data}/${sample}.picard.insert.metrics.tab" \
       HISTOGRAM_FILE="${Data}/${sample}.picard.insert.metrics.pdf"
+      
+  #This will set a variable for the mean from picard and then we echo everything we need in a text file for pindel
+  mean=$(cat "${Data}/${sample}.picard.insert.metrics.tab" | awk '{print $5}' | sed -n '8p' | cut -f1 -d".")
+  #echo -e "${Data}/${sample}_sorted_dedup_realigned_sorted.bam\t$mean\t${sample}" > "${Data}/pindel_samples.txt"
+  
+  ##
+  #Sam2pindel since not bwa instead of echo to text?
+  samtools view "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" | sam2pindel - "${Data}/${sample}_output.pindel" "$mean" "${sample}" 0 Illumina-PairEnd
 
-      mean=$(cat "${Data}/${sample}.picard.insert.metrics.tab" | awk '{print $5}' | sed -n '8p' | cut -f1 -d".")
-
-  #Create file with
-  #bam_path \t insert_size_forPairedEnds \t name
-  echo -e "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam\t$mean\t${sample}" > "${Data}/pindel_samples.txt"
-  #Run pindel
-  #this will look for indels, inversions, insertions etc.
-  #can supress using --report_long_insertions F --report_duplications F --report_inversions F
-  # --min_num_matched_bases int #only consider reads as evidence if they map with more than this number of bases to the reference (default 30)
-  pindel -T $threads --max_range_index 4 --min_perfect_match_around_BP 5 --min_num_matched_bases 15 --report_close_mapped_reads T -f "$Ref_name" -i "${Data}/pindel_samples.txt" -o "${Data}/${sample}_pindel"
-  #--max_range_index is the max indel size 4=8,092
-  #=m is the
+  
+  #feed into pindel, you can do more with pindel read about it 
+  pindel -c ALL --max_range_index 4 --min_perfect_match_around_BP 5 --min_num_matched_bases 15 --report_close_mapped_reads T -f "${Ref_name}" -p "${Data}/${sample}_output.pindel" -o "${Data}/${sample}_pindel"
   # -c 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':2,000,000-3,000,000 #to look at just a subset of the file
-
-  #then to convert to VCF file if you want to make life easier later
+  
+  #Convert to VCF file for viewing
   today=$(date +'%m%d%Y')
-  #James: Very long message if you run the command below
-  pindel2vcf -G -p "${Data}/${sample}_pindel_D" -r "$Ref_name" -R "cdc1551" -d "$today" -v "${Data}/${sample}_pindel.vcf"
-
-  #lets also make a "basic" file
-  #the awk statment takes only deletions that have 10 or more support reads
-  # grep BP "${Data}/${sample}_D" | awk '{print $13"\t"$14"\t"$16}' | awk '$3 >= 10' >  "${Data}/${sample}_D.basic_tmp"
-  # echo -e "start\tend\tSupport_reads\tLength" > "${Data}/${sample}_D.basic"
-  # awk 'BEGIN { OFS = "\t" } NR == 1 { $4 = "Length" } NR >= 1 { $4 = $2 - $1 } 1' "${Data}/${sample}_D.basic_tmp" >> "${Data}/${sample}_D.basic"
-  # rm "${Data}/${sample}_D.basic_tmp"
-
-  #add -G flag to make it GATK compatible
-  rm "${Data}/pindel_samples.txt"
-
-  # Now lets do another tool, DELLY2 - make sure you install the new one
-  #remember to make ite parellel make PARALLEL=1 -B src/delly
-  export OMP_NUM_THREADS=$threads
-  #for some reason delly crashes on ubuntu if there are singeltons so we have to remove these, will try figure out whats happenign at a later stage
-  #in meantime if running on there then uncomment this and comment things inside ###comment this###
-  #
-  ##uncomment this##  James: seems to run but takes super long
-  # samtools view -f 2 -b "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" -o "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_delly_Temp.bam"
-  # samtools index "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_delly_Temp.bam"
-  # /bin/delly/src/delly call -t DEL -e illumina -i 10000 -q 10 -o "${Data}/${sample}_dell_DEL.bcf" -g "$Ref_name" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_delly_Temp.bam"
-  ##uncomment this##
-
-  ###coomment this## 
-  ~/Desktop/Deletions_only_pipeline/delly/src/delly call -t DEL -e illumina -i 10000 -q 10 -o "${Data}/${sample}_dell_DEL.bcf" -g "$Ref_name" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam"
-  ###coomment thisend##
-  #make more stringent, add -q 20 - this is the map quality score
-  #-i is the max indel size
-  bcftools view "${Data}/${sample}_dell_DEL.bcf" > "${Data}/${sample}_dell_DEL.vcf"
-  #convert the bcf file into a human readable vcf file
-
-  # #lets also make a "basic" file
-  # awk '{ if ($2 >= 2000000 && $2 <= 3000000) print $0 }' "${Data}/${sample}_dell_DEL.vcf" | grep DEL > "${Data}/${sample}_dell_DEL_subset
-  #make basic
-  # Rscript ${Script_dir}/make_basic_delly.R "${Data}/${sample}_dell_DEL.vcf" "${Data}/${sample}_dell_DEL.basic"
-
-  ##uncomment this##
-  # rm "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_delly_Temp.bam"
-  ##uncomment this end##
-
+  pindel2vcf -G --min_size 100 -p "${Data}/${sample}_pindel_D" -r "$Ref_name" -R "CDC1551" -d "$today" -v "${Data}/${sample}_pindel_D.vcf"
+  
+  pindel2vcf -G --min_size 100 -p "${Data}/${sample}_pindel_INV" -r "$Ref_name" -R "CDC1551" -d "$today" -v "${Data}/${sample}_pindel_INV.vcf"
+  
+  pindel2vcf -G --min_size 100 -p "${Data}/${sample}_pindel_TD" -r "$Ref_name" -R "CDC1551" -d "$today" -v "${Data}/${sample}_pindel_TD.vcf"
+  
+  pindel2vcf -G --min_size 100 -p "${Data}/${sample}_pindel_LI" -r "$Ref_name" -R "CDC1551" -d "$today" -v "${Data}/${sample}_pindel_LI.vcf"
+  
+  pindel2vcf -G --min_size 100 -p "${Data}/${sample}_pindel_BP" -r "$Ref_name" -R "CDC1551" -d "$today" -v "${Data}/${sample}_pindel_BP.vcf"
+  
+   
+  #pindel variant types D=deletion, INV=inversion, TD=tandem duplication, LI=large insertion BP=unasigned breakpoints
+  
+  #Delly segmentation faults using all the ususal tricks it might be cause I use novo
+  
+  #export OMP_NUM_THREADS=$threads
+  
+  #some problems, trying to subset and sort plus reindex. Sorted using picard, samtools is the other option. 
+  
+  
   #lumpy
+  
   # Extract the discordant paired-end alignments.
-  samtools view -b -F 1294 "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" > "${sample}_sample.discordants.unsorted.bam"
+  samtools view -b -F 1294 "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" > "${Data}/${sample}_sample.discordants.unsorted.bam"
+  
   # Extract the split-read alignments
-  samtools view -h "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" \
-    | /home/user/Desktop/programs/lumpy-sv/scripts/extractSplitReads_BwaMem -i stdin \
+  samtools view -h "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" \
+    | /home/user/Documents/genomics/programs/lumpy-sv/scripts/extractSplitReads_BwaMem -i stdin \
     | samtools view -Sb - \
-    > "${sample}_sample.splitters.unsorted.bam"
-
-
+    > "${Data}/${sample}_sample.splitters.unsorted.bam"
+    
   lumpyexpress \
-    -B "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" \
-    -S "${sample}_sample.splitters.unsorted.bam" \
-    -D "${sample}_sample.discordants.unsorted.bam" \
+    -B "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" \
+    -S "${Data}/${sample}_sample.splitters.unsorted.bam" \
+    -D "${Data}/${sample}_sample.discordants.unsorted.bam" \
     -o "${Data}/${sample}_lumpy.vcf"
 
-  vcf-sort "${Data}/${sample}_lumpy.vcf" > "${Data}/${sample}_lumpy.sorted.vcf"
+  vcf-sort "${Data}/${sample}_lumpy.vcf" > "${Data}/${sample}_lumpy_sorted.vcf"
+  
+  #svtyper
+  bgzip "${Data}/${sample}_lumpy_sorted.vcf"
+  samtools index "${Data}/${sample}_sample.splitters.unsorted.bam"
+  
+  zcat "${Data}/${sample}_lumpy_sorted.vcf" | svtyper -B "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" -S "${Data}/${sample}_sample.splitters.unsorted.bam" >  "${Data}/${sample}_lumpy_typed.vcf"
+  
+  vcf-sort "${Data}/${sample}_lumpy_typed.vcf" > "${Data}/${sample}_lumpy_typed_sorted.vcf"
+  
+  
+  
+  ############################################################################################################################
+  #
+  # extract unmapped reads for de novo assembly and subset bam files
+  #
+  ############################################################################################################################
+   # bam2fastq --unaligned --output "${denovo}/${sample}_unmapped#.fq" --output "${denovo}/${sample}_unmapped#.fq" "${Data}/${sample}_sorted_dedup_realigned_sorted.bam"
+  samtools view -b -f 4 "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" > "${denovo}/${sample}_unmapped.bam"
+  #some stats for later
+  samtools flagstat "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" > "${denovo}/${sample}_bamfile_flagstat.txt"
+  samtools flagstat "${denovo}/${sample}_unmapped.bam" > "${denovo}/${sample}_unmapped_bamfile_flagstat.txt"
 
-#rm: cannot remove 'HN878_sample.discordants.unsorted.bam': No such file or directory
+  
+  #extract unmapped bam to fastq for kmergeni   
+  java -Xmx"${ram}"g -jar "/home/user/Documents/genomics/programs/picard.jar"
+    I="${denovo}/${sample}_unmapped.bam"
+    F="${denovo}/${sample}_unmapped_1.fq"
+    F2="${denovo}/${sample}_unmapped_2.fq"
+    INCLUDE_NON_PRIMARY_ALIGNMENTS=true
+    
+  
+    mv "${Data}/${sample}_forward_paired.fq" "${denovo}/${sample}_forward_paired.fq" 
+    mv "${Data}/${sample}_reverse_paired.fq" "${denovo}/${sample}_reverse_paired.fq" 
+  
 
-  rm "${sample}_sample.discordants.unsorted.bam" "${sample}_sample.splitters.unsorted.bam"
-
-
-
-
-  #local assembly in regions of intrest
-  # subset reads
-  while read name start end
-  do
+  
+    while read name start end
+    do
   ########################
-  ##all this is untested##
-  ########################
+  
 # 2628768-2630832
 #mt2419=2628768
 #mt2422=2630832
-    #subset and remove reads with MAPQ less than 30 "-q 30""   James: defined name=CDC1551 (tried to fix an error below but did not help)
-    mkdir "$Temp"
-    name=CDC1551
-    samtools view -bq 30 "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':$(($start-2000))-$(($end+2000)) > "${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam"
-    velveth ${Temp} 25 -bam -shortPaired "${Temp}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam"
-    velvetg ${Temp} -ins_length $mean -exp_cov 100
-    mv "${Temp}/contigs.fa" "${Temp}/${sample}_${name}_contigs.fa"
+    #subset and remove reads with MAPQ less than 30 "-q 30""   
+    
+    
+    ####################################
+    #output for full assembly
+    #output for unmaped assembly
+    ####################################
+   
+  
+  #extract unmapped reads from Bam
+    
+    echo "$name"
+    
+    #echo test
+     {
+        echo "$name"
+        echo "$start" 
+        echo "$end" 
+        echo "$mean"  
+        echo "$denovo" 
+      } > "${denovo}/${sample}_${name}_echo_setup.txt" 
+      
+    
+    
+     #subset bam file 
+    samtools view "${Data}/${sample}_sorted_dedup_realigned_sorted.bam" 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':$(($start-2000))-$(($end+2000)) > "${denovo}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam" -b -h
+    #build SOAP config file for user (unmapped reads)
+  {
+        echo "max_rd_len=100"
+        echo "[LIB]"
+        echo "avg_ins=$mean"
+        echo "reverse_seq=0"
+        echo "asm_flags=3"
+        echo "rank=1"
+        echo "pair_num_cutoff=3"
+        echo "map_len=32"
+        echo "b=${denovo}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam"
+    } > "${denovo}/${sample}_${name}_SOAP_subset_config.txt"
+    
+    {
+        echo "max_rd_len=100"
+        echo "[LIB]"
+        echo "avg_ins=$mean"
+        echo "reverse_seq=0"
+        echo "asm_flags=3"
+        echo "rank=1"
+        echo "pair_num_cutoff=3"
+        echo "map_len=32"
+        echo "q1=${denovo}/${sample}_forward_paired.fq"
+        echo "q2=${denovo}/${sample}_reverse_paired.fq"
+    } > "${denovo}/${sample}_SOAP_full_config.txt"
+    
+    {
+        echo "max_rd_len=100"
+        echo "[LIB]"
+        echo "avg_ins=$mean"
+        echo "reverse_seq=0"
+        echo "asm_flags=3"
+        echo "rank=1"
+        echo "pair_num_cutoff=3"
+        echo "map_len=32"
+        echo "q1=${denovo}/${sample}_unmapped_1.fq"
+        echo "q2=${denovo}/${sample}_unmapped_2.fq"
+    } > "${denovo}/${sample}_SOAP_unmapped_config.txt"
+
+
+
     # now do local alignment and draw figure
     #subset reference
-    start_ref=$(($start-2000))
-    end_ref=$(($end+2000))
-    samtools faidx $Ref_name 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':$start_ref-$end_ref > "${Temp}/${name}_ref_area_intrest.temp.fasta"
-
+    #start_ref=$(($start-2000))
+    #end_ref=$(($end+2000))
+    samtools faidx "${Ref_name}" 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':$(($start-2000))-$(($end+2000)) > "${denovo}/${name}_ref_area_intrest.temp.fasta"
+    samtools faidx "${denovo}/${name}_ref_area_intrest.temp.fasta"
+    
     #index subset
-    ref_area_intrest="${Temp}/${name}_ref_area_intrest.temp.fasta"
+
+    #ref_area_intrest="${denovo}/${name}_ref_area_intrest.temp.fasta"
+    
     #remove name as rmpreviously aligh=ned to different ref so this will cause comlications
-    sed '1s/.*/>gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551/' $ref_area_intrest > "${Temp}/${name}_ref_area_intrest.fasta"
-    ref_area_intrest="${Temp}/${name}_ref_area_intrest.fasta"
-    #James bwa index below gives error message "Floating point exception" and dumps the core
-    bwa index -a bwtsw $ref_area_intrest
 
-    #align contigs to it
+    #sed '1s/.*/>gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551/' $ref_area_intrest > "${denovo}/${name}_ref_area_intrest.fasta"
+    #ref_area_intrest="${denovo}/${name}_ref_area_intrest.fasta"
 
+    
     #change this to bowtie2 as it is more splice aware? or something that uses larger reads, still working on this
 
-    bwa mem $ref_area_intrest "${Temp}/${sample}_${name}_contigs.fa" > "${Temp}/${sample}_${name}_contigs.sam"
+ #velvetoptimiser '/home/user/Desktop/test_data/denovo' --v -s 15 --e 25 --t 6 --a --d -f "-fastq.gz -shortPaired -separate '/home/user/Desktop/test_data/test_subset_unmapped__1.fq.gz' '/home/user/Desktop/test_data/test_subset_unmapped__1.fq.gz'" 
+#################################################################################################################################
+#using SOAPdenovo2
+#Requires a Config file requires certain parameters
+#max_rd_len=100
+#[lib]
+#1) avg_ins=300
+##Illumina insert size is usually around 300 bp use 300
+#2) reverse_seq=0
+#3) asm_flags=3
+#4) rd_len_cutof=60
+#5) rank=1
+#6) pair_num_cutoff=3
+#7) map_len=32
+#q1=fastq file 1 PE
+#q2=fastq file 2
+#reads the files but nothing usefull happens
+#SOAPdenovo-63mer all -s '/home/user/Desktop/test_data/denovo/test.config' -o "test_graph" -R -F -K 23
+#avg_ins=300
 
-    #convert to bam and sort file
-    java -Xmx"${ram}"g -jar /home/user/Desktop/programs/picard.jar SortSam \
-        INPUT="${Temp}/${sample}_${name}_contigs.sam" \
-        OUTPUT="${Data}//${sample}_${name}_contigs.bam" \
-        SORT_ORDER=coordinate \
-        VALIDATION_STRINGENCY=LENIENT
+#reverse_seq=0
 
-    #make graph, also add to output break points and to reannotate it againt the whole genome James: This only makes an empty text file
-    bedtools genomecov -bga -ibam "${Data}/${sample}_${name}_contigs.bam" -g $ref_area_intrest > "${Data}/${sample}_${name}_contigs.all.coverage"
+#asm_flags=3
 
-    bedtools genomecov -bga -ibam "${Data}/${sample}_${name}_contigs.bam" -g $ref_area_intrest |
-    awk '{ if ( $4 == 0) print $0}' > "${Data}/${sample}_${name}_contigs.0.coverage"
+#rd_len_cutof=60
 
+#rank=1
 
-    rm -r "$Temp"
+#pair_num_cutoff=3
 
+#map_len=32
 
-  # # breakKmer
-  # #prepare reference file
-  # config_file="config_test.cfg"
+########################################################################
+#RDAnalyzer
+#SpoTyping xiaeryu
 
-  #config file
-# analysis_name=S1945
-# targets_bed_file=/Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/ref/GCF_000008585.1_ASM858v1_genomic.bed
-# sample_bam_file=/Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/corrected.bam
-# analysis_dir=/Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial
-# reference_data_dir=/Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/ref/breakmer_working_ref_dir
-# jellyfish=/Users/jdlim/bioinfomatics/kSNP3/jellyfish
-# blat=/Users/jdlim/bioinfomatics/blat/blat
-# gfclient=/Users/jdlim/bioinfomatics/blat/gfClient
-# gfserver=/Users/jdlim/bioinfomatics/blat/gfServer
-# fatotwobit=/Users/jdlim/bioinfomatics/faToTwoBit
-# reference_fasta=/Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/ref/GCF_000008585.1_ASM858v1_genomic.fna
-# gene_annotation_file=/Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/ref/GCF_000008585.1_ASM858v1_genomic.gff
-# kmer_size=15
-# cutadapt=/Library/Frameworks/Python.framework/Versions/2.7/bin/cutadapt
-# cutadapt_config_file=cutadapt.cfg
-
-  # threads=4
-  # export PATH=/usr/local/Cellar/samtools/1.3.1/bin/samtools:$PATH
-  #
-  # # samtools index file.bam
-  #
-  # # Prepare the reference data files before starting the analysis.
-  # python /Users/jdlim/bioinfomatics/BreaKmer/breakmer.py prepare_reference_data -n $threads -c $config_file
-  #
-  # # Start the blat server on a specific host and port.
-  # #needs the 2bit file in the dir with the reference fasta
-  # /Users/jdlim/bioinfomatics/faToTwoBit /Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/ref/GCF_000008585.1_ASM858v1_genomic.fna /Users/jdlim/Desktop/Jamie/output/S1945/breaKmer_trial/ref/GCF_000008585.1_ASM858v1_genomic.fna.2bit
-  # python /Users/jdlim/bioinfomatics/BreaKmer/breakmer.py start_blat_server -c $config_file
-  #
-  # # Analyze all the target genes specified in the targets bed file.
-  # python /Users/jdlim/bioinfomatics/BreaKmer/breakmer.py run -n $threads -c $config_file
-
-
-# Analyze a subset of genes specified in a file.
-# python <path to breakmer scripts>/breakmer.py -g <file containing list of target genes to analyze> <path to breakmer configuration file>
-
-
-
-
-  #   #try deletion callers on subset?
-  #
-  #   #first remove reads with map quality below 30
-  #   samtools view -bq 30 "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam" > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam"
-  #
-  #   # $ref_area_intrest
-  #   # "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam"
-  #
-  #   samtools index "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam"
-  #   samtools faidx $ref_area_intrest
-  #
-  #   #delly
-  #   ~/bin/delly/src/delly call -t DEL -e illumina -o "${Data}/${sample}_${name}_dell_DEL.bcf" -g "$ref_area_intrest" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam"
-  #    "${Data}/${sample}_${name}_dell_DEL.bcf" > "${Data}/${sample}_${name}_dell_DEL.vcf"
-  #   rm "${Data}/${sample}_${name}_dell_DEL.bcf"
-  #
-  #   #pindel
-  #
-  #   #lumpy
-  #   # Extract the discordant paired-end alignments.
-  #   samtools view -b -F 1294 "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam" > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.discordants.unsorted.bam"
-  # # Extract the split-read alignments
-  # samtools view -h "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam" \
-  #   | ~/bin/lumpy-sv/scripts/extractSplitReads_BwaMem -i stdin \
-  #   | samtools view -Sb - \
-  #   >"${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.splitters.unsorted.bam"
-  #
-  # lumpyexpress \
-  #   -B "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.filtered.bam" \
-  #   -S "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.splitters.unsorted.bam" \
-  #   -D "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.discordants.unsorted.bam" \
-  #   -o "${Data}/${sample}_${name}_lumpy.vcf"
-  #
-  # vcf-sort "${Data}/${sample}_${name}_lumpy.vcf"
-  #
-
-
-  done<"$Indels_of_interst"
-
-  # ##################################################################################################################################
-  # ##for each indel you can do this, although it would be better to look at all of them at once and reduce the number of iterations##
-  # ############to do that we can just get the coverage of the entire genome and then read that into R and do some stuff##############
-  # ##################################################################################################################################
-  # #let us look at all the dels of intrest in the input file
-  # while read name start end
-  # do
-  #   #make bam subset for viewing later - start and end +100
-  #   samtools view -b "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" 'gi|50953765|ref|NC_002755.2|Mycobacterium_tuberculosis_CDC1551':$(($start-100))-$(($end+100)) > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam"
-  #
-  #   #get coverage of all postions in area that are less than 10 - use subset as less to iterate through
-  #   bedtools genomecov -ibam "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset_${name}.bam" -bga |
-  #     awk -v start=$start -v end=$end '{ if ($2 >= start && $3 <= end && $4 <10) print $0; else if($2 <= end) exit;}' > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_${name}.coverage"
-  #
-  #   # #average depth coverage region and of all positions where something was mapped
-  #   samtools depth "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.bam" |
-  #     awk '{sum+=$3} END { print "Average depth accross mapped genome = ",sum/NR}' > "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_${name}.average_coverage"
-  #
-  #   samtools depth "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_subset.bam" |
-  #     awk -v start=$start -v end=$end '{ if ($2 >= start && $3 <= end ) sum+=$3} END { print "Average depth accross selected region = ",sum/NR}' >> "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted_${name}.average_coverage"
-  #
-  #   #subset the pindel and delly outputs
-  #
-  #   echo -e "start\tend\tSupport_reads\tLength" > "${Data}/${sample}_pineldD_${name}.basic"
-  #   awk -v start=$start -v end=$end '{ if ( $2 <= end $3 <= start ) print $0 }' "${Data}/${sample}_D.basic" >> "${Data}/${sample}_pineldD_${name}.basic"
-  #
-  #   echo -e "start\tend\tSupport_reads\tLength" > "${Data}/${sample}_dellyD_${name}.basic"
-  #   awk -v start=$start -v end=$end '{ if ( $2 <= end $3 <= start ) print $0 }' "${Data}/${sample}_dell_DEL.basic" >> "${Data}/${sample}_dellyD_${name}.basic"
-  #
-  #   #######################################################################################
-  #   ##from here we will move the data off the server and make some tables like you wanted##
-  #   #######################################################################################
-  # done<"$Indels_of_interst"
-
-  # Rscript "${Script_dir}/PostPipe.R" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.coverage" "${Data}/${sample}_D.basic" "${Data}/${sample}_dell_DEL.vcf_delly.basic" "${Script_dir}/references/GCA_000008585.1_ASM858v1_feature_table.txt" "$Indels_of_interst" "${Data}/${sample}"
- ## Rscript "${Script_dir}/PostPipe_new.R" "$Ref_name" "${Data}/${sample}_pindel.vcf" "${Data}/${sample}_dell_DEL.vcf" "${Data}/${sample}_lumpy.sorted.vcf" "${Data}/${sample}_BWA_sorted_dedup_realigned_sorted.coverage" "${Script_dir}/references/CDC1551_genes.txt" "${sample}" "$Indels_of_interst" ${Data}
-
-  #merge SV vcfs?
-  #cant get working on server, will try again later
-  # mergeSVcallers -a "$Ref_name" -f "${Data}/${sample}_lumpy.sorted.vcf","${Data}/${sample}_dell_DEL.vcf","${Data}/${sample}_pindel.vcf" -t LUMPY,DELLY,PINDEL -s 500
-
-  # Convert to vcfs to bed files
-  # bedops
-  # vcf2bed -i .vcf -o .bed
-
-  #Find overlaps and print new bed file
-  # bedtools
-  # bedtools merge -i repeatMasker.bed #Merge overlapping repetitive elements into a single entry.
-
-
-done<"$Files_IN"
+ rm -r "$Temp"
+ done<"$Indels_of_interst"
+ done<"$Files_IN"
+ 
+ echo "Analysis done"
 
 exit 0
-
-
