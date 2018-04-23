@@ -8,13 +8,13 @@ echo "${master_dir}"
 
 if  [ "${1}" == manual ];            
     then
-    less "${master_dir}/misc/manual.txt"
+    less "${master_dir}/databases/manual.txt"
 exit 0
 fi
 
 if [[ "${1}" == -h || "${1}" == --help || "${1}" == "" ]];
 	then
-	cat "${master_dir}/misc/help.txt"
+	cat "${master_dir}/databases/help.txt"
 exit 0
 fi
 #set environment variables
