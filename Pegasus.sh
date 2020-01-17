@@ -28,11 +28,11 @@ snp_calling="$6" 				#snp calling yes or no
 sv_calling="$7"					#structural variant calling
 #lineage_calling="$8"			#only compatible with H37Rv
 gene_fusions="${8}"				#call gene fusions
-tree="{$9}"					#get files for tree
-ref_user="${10}"				#reference file
+#tree="{$9}"					#get files for tree
+ref_user="${9}"				#reference file
 #ref_novo=${10}					#reference index file for novo.ndx
-regions_of_interest="${11}"		#file to target list
-debug="${12}"					#run in verbose mode
+regions_of_interest="${10}"		#file to target list
+debug="${11}"					#run in verbose mode
 
 if [[ "${debug}" == "TRUE" ]];
 	then 
