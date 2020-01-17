@@ -200,7 +200,8 @@ sudoInstaller "sambamba"
 sudoInstaller "yad" 
 sudoInstaller "g++" 
 sudoInstaller "cmake" 
-sudoInstaller "gawk" 
+sudoInstaller "gawk"
+sudoInstaller "gnuplot-nox"
 sudoInstaller "soapdenovo2"
 
 samblaster
