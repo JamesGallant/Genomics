@@ -141,7 +141,7 @@ fi
 
 #source the functions
 
-source "${master_dir}/PegasusDev_functions.sh"
+source "${master_dir}/Pegasus_functions.sh"
 
 #start the mainloop
 while IFS='' read -r sample || [[ -n "$sample" ]];  
