@@ -70,14 +70,14 @@ picard="${master_dir}/programs/build/libs/picard.jar"														#this file pa
 gatk="${master_dir}/programs/GenomeAnalysisTK.jar"															#still a problem
 lumpy_extract_splitters="${master_dir}/programs/lumpy-sv/scripts/extractSplitReads_BwaMem"					#double check path			
 lumpy_vcftobed="${master_dir}/programs/lumpy-sv/scripts/vcfToBedpe"											#works
-export PATH=$PATH:"${master_dir}/programs/bwa"																#works																						
+#export PATH=$PATH:"${master_dir}/programs/bwa"																#works																						
 export PATH=$PATH:"${master_dir}/programs/novocraft"														#drequired manual download
-export PATH=$PATH:"${master_dir}/programs/lumpy-sv"															#issue with make
-export PATH=$PATH:"${master_dir}/programs/svtyper-master"													#required manual download
-export PATH=$PATH:"${master_dir}/programs/FastQC"															#required manual download
-export PATH=$PATH:"${master_dir}/programs/SOAPdenovo2"														#works
+export PATH=$PATH:"${master_dir}/programs/lumpy-sv/bin/"															#issue with make
+#export PATH=$PATH:"${master_dir}/programs/svtyper-master"													#required manual download
+#export PATH=$PATH:"${master_dir}/programs/FastQC"															#required manual download
+#export PATH=$PATH:"${master_dir}/programs/SOAPdenovo2"														#works
 export PATH=$PATH:"${master_dir}/programs/svprops/src/"														#works
-export PATH=$PATH:"${master_dir}/programs/samblaster"														#works
+export PATH=$PATH:"${master_dir}/programs/samblaster/"														#works
 
 #create directory structures and pre analysi checks
 #mkdir "${out_dir}"
