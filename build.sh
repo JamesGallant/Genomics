@@ -1,6 +1,6 @@
 #!/bin/bash
 ##this is a build file##
-#to do: SRA toolkits, soapdenovo2 is a issue, samblaster and lumpy not checked, 
+#to do: SRA toolkits 
 #novocraft has to be downloaded by user
 
 #grab passwords
@@ -38,7 +38,7 @@ do
 done
 
 #git installation functions
-#samblaster
+#samblaster works
 samblaster() {
 	echo "Installing samblaster"
 	mkdir $program_dir/samblaster
@@ -55,9 +55,9 @@ samblaster() {
 	    echo "Follow these docs: https://github.com/GregoryFaust/samblaster.git"
 	    echo "The files need to be in the programs directory"
 	    
-	    read -s -p "Would you like to continue the installation? [y/n]: " contInstall
+	    read -s "Would you like to continue the installation? [y/n]: " contInstall
 	    
-	    if [$contInstall == "n" || $contInstall == "N"];
+	   if [[ $contInstall == "n" || $contInstall == "N" ]];
 	    then
 	    	echo "aborting installation"
 	    	exit 1
@@ -70,25 +70,27 @@ samblaster() {
 
 }
 
+
 #lumpy-SV
 lumpy() {
 	echo "installing lumpy"
 	mkdir $program_dir/lumpy-sv
 	git clone --recursive "https://github.com/arq5x/lumpy-sv.git" $program_dir/lumpy-sv/
 	cd $program_dir/lumpy-sv
+	export ZLIB_PATH="/usr/lib/x86_64-linux-gnu/"
 	make
 	cd $master_dir
 	echo "checking sanity of Lumpy"
-	export PATH=$PATH:"${master_dir}/programs/lumpy-sv/"
+	export PATH=$PATH:"${master_dir}/programs/lumpy-sv/bin/"
 	if ! [ -x "$(command -v lumpyexpress)" ];
 	then 
 	    echo "lumpy installation failed"
 	    echo "Follow these docs: https://github.com/arq5x/lumpy-sv.git"
 	    echo "The files need to be in the programs directory"
 	    
-	    read -s -p "Would you like to continue the installation? [y/n]: " contInstall
+	    read -s  "Would you like to continue the installation? [y/n]: " contInstall
 	    
-	    if [$contInstall == "n" || $contInstall == "N"];
+	   if [[ $contInstall == "n" || $contInstall == "N" ]];
 	    then
 	    	echo "aborting installation"
 	    	exit 1
@@ -102,35 +104,7 @@ lumpy() {
 }
 
 #SOAPdenovo2				
-soap_install () {
-	cd "${programs}"
-	echo "Installing SOAPdenovo2"
-	git clone --recursive "https://github.com/aquaskyline/SOAPdenovo2.git"
-	cd SOAPdenovo2
-	make 
-	cd $master_dir
-	echo "Sanity checks"
-	export PATH=$PATH:"${master_dir}/programs/SOAPdenovo2"
-	if ! [ -x "$(command -v soapdenovo-63mer)" ];
-	then 
-	    echo "soapdenovo installation failed"
-	    echo "Follow these docs: https://github.com/aquaskyline/SOAPdenovo2.git"
-	    echo "The files need to be in the programs directory"
-	     
-	    read -s -p "Would you like to continue the installation? [y/n]: " contInstall
-	    
-	    if [$contInstall == "n" || $contInstall == "N"];
-	    then
-	    	echo "aborting installation"
-	    	exit 1
-    	    else 
-    	    	echo "moving on to next installation" 
-    	    fi
-    	    
-	else
-	    echo "SOAPdenovo2 found"
-	fi					
-}
+
 
 #delly works
 delly() {
@@ -147,9 +121,9 @@ delly() {
 	    echo "Follow these docs: https://github.com/dellytools/delly.git"
 	    echo "The files need to be in the programs directory"
 	     
-	    read -s -p "Would you like to continue the installation? [y/n]: " contInstall
+	    read -s  "Would you like to continue the installation? [y/n]: " contInstall
 	    
-	    if [$contInstall == "n" || $contInstall == "N"];
+	    if [[ $contInstall == "n" || $contInstall == "N" ]];
 	    then
 	    	echo "aborting installation"
 	    	exit 1
@@ -178,9 +152,9 @@ svprops() {
 	    echo "Follow these docs: https://github.com/dellytools/svprops.git"
 	    echo "The files need to be in the programs directory"
 	     
-	    read -s -p "Would you like to continue the installation? [y/n]: " contInstall
+	    read -s  "Would you like to continue the installation? [y/n]: " contInstall
 	    
-	    if [$contInstall == "n" || $contInstall == "N"];
+	    if [[ $contInstall == "n" || $contInstall == "N" ]];
 	    then
 	    	echo "aborting installation"
 	    	exit 1
@@ -215,39 +189,37 @@ else
     echo "svtyper found"
 fi
 #multithread processes
-sudoInstaller "samtools" &
-sudoInstaller "bwa" &
-sudoInstaller "bcftools" && fg
-wait
-sudoInstaller "abacas" &
-sudoInstaller "svtyper" &
-sudoInstaller "fastqc" && fg
-wait
-sudoInstaller "tabix" &
-sudoInstaller "sambamba" &
-sudoInstaller "yad" && fg
-wait
-sudoInstaller "g++" &
-sudoInstaller "cnake" &
-sudoInstaller "gawk" && fg
-wait
-samblaster &
-lumpy && fg
+sudoInstaller "samtools" 
+sudoInstaller "bwa" 
+sudoInstaller "bcftools" 
+sudoInstaller "abacas" 
+sudoInstaller "svtyper" 
+sudoInstaller "fastqc" 
+sudoInstaller "tabix" 
+sudoInstaller "sambamba" 
+sudoInstaller "yad" 
+sudoInstaller "g++" 
+sudoInstaller "cmake" 
+sudoInstaller "gawk" 
+sudoInstaller "soapdenovo2"
+
+samblaster
+export PATH=$PATH:"${master_dir}/programs/samblaster"
+lumpy
 wait 
 delly &
 svprops && fg
 wait
-soap_install &
-zips && fg
+zips
 
 echo "changing write permissions"
-declare -a arr2=("lumpy-sv" "picard" "trimmomatic-0.36" "delly" "bwa" "SOADPdenovo2" "svprops" "samblaster")
+declare -a arr2=("lumpy-sv" "picard" "trimmomatic-0.36" "delly"  "svprops" "samblaster")
 
 #change permissions
 for a in "${arr2[@]}";
 do
 	echo "changing permissions"
-	chmod 777 "${a}"
+	chmod 777 "$program_dir/${a}"
 done
 
 echo "Build finished"
