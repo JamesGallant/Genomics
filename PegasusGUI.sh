@@ -125,7 +125,7 @@ if [[ "${sv_calling}" == "TRUE" ]];
 fi
 
 #get functions for pipe
-source "${master_dir}/scripts/main_functions.sh"      
+source "${master_dir}/pegasus_functions.sh"      
 
 #start the mainloop
 echo "Entering Pegasus mainloop"
