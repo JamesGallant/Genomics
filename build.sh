@@ -251,7 +251,7 @@ fi
 if [[ "${term}" == TRUE ]];
 then
 	echo "launching terminal"
-	./main.sh
+	./Pegasus.sh
 fi
 
 rm ./temp.txt
