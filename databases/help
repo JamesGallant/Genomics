@@ -6,14 +6,13 @@
 									
 	Version: 0.5							
 									
-	Creators: James Gallant, Jason Limberis				
+	Creators: James Gallant		
 	contact:  jgallant@sun.ac.za					
 									
 	Principal investigators: Prof. S. Sampson			
 				 Prof. W. Bitter				
 	Companies: Stellenbosch University 
 		   Vrije Universiteit Amsterdam
-		   University of Cape Town
 
 	This is a next generation sequencing data processing pipeline
 	for Illumina reads. The software is intended for use with 
@@ -33,10 +32,9 @@ usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call
 <output dir>			[DIR]	<output directory>
 <threads>			[INT]	<ammount of cores to allocate>
 <ram>				[INT]	<ammount of ram to allocate>
-<call snps>			[CHAR]	<TRUE or FALSE>
-<call sv's>			[CHAR]	<TRUE or FALSE>
-<call lineages>			[CHAR]	<TRUE or FALSE, only for H37Rv as a reference>
+<call snps>			[BOOL]	<TRUE or FALSE>
+<call sv's>			[BOOL]	<TRUE or FALSE>
+<call gene fusions>		[BOOL]	<TRUE or FALSE>
 <reference>			[CHAR]	<H37Rv or CDC1551, case sensitive enter exactly>
 <target regions>		[File]	<list of targets, one per line including identifier start and stop> OR FALSE to skip
-<positions>
-<verbose>			[CHAR]	<TRUE or FALSE, default is FALSE>
+<verbose>			[BOOL]	<TRUE or FALSE, default is FALSE>
