@@ -16,7 +16,7 @@ mv ./Genomics-master ./Genomics
 cd Genomics
 bash build.sh
 ```
-Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to http://www.novocraft.com/products/novoalign/ and click the download button. Navigate to **version 3.07.00** was tested on but higher versions should work as well. Click the relevent package based on your OS and this should download to your downloads folder. This needs to be copied to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
+Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to http://www.novocraft.com/products/novoalign/ and click the download button. Navigate to **version 3.07.00**, this software was tested on this specific version but higher versions should work as well. Click the relevent package based on your OS and this should download to your downloads folder. This needs to be copied to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
 
 ```
 tar -xzf novocraft.tar.gz
