@@ -26,6 +26,7 @@ tar -xzf novocraft.tar.gz
 remove any trailing \r characters just in case.
 ```
 sed -i 's/\r$//' Pegasus.sh
+sed -i 's/\r$//' Pegasus_functions.sh
 ```
 To see the positional arguments use
  ```
