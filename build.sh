@@ -12,7 +12,6 @@ if [ $? -eq 0 ]; then
 master_dir="$(pwd "$0")"
 mkdir programs
 program_dir="$master_dir/programs"
-
 #global package installer
 sudoInstaller() {
 	if ! [ -x "$(command -v $1)" ];
@@ -213,15 +212,6 @@ svprops && fg
 wait
 zips
 
-echo "changing write permissions"
-declare -a arr2=("lumpy-sv" "picard" "trimmomatic-0.36" "delly"  "svprops" "samblaster")
-
-#change permissions
-for a in "${arr2[@]}";
-do
-	echo "changing permissions"
-	chmod 777 "$program_dir/${a}"
-done
 
 echo "Build finished"
 
