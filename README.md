@@ -3,7 +3,7 @@ Pegausus deletion caller for Illumina short read sequencing files currently comp
 
 # Installation
 Because of the dependencies installation can be a pain, I have tried to automate as much as possible using build.sh but some files need to be installed to the programs directory. 
-**Installing the repo**
+<br><br>**Installing the repo:**<br><br>
 Install with git 
 ```
 git clone --recursive https://github.com/JamesGallant/Genomics.git
@@ -17,14 +17,14 @@ mv ./Genomics-master ./Genomics
 cd Genomics
 bash build.sh
 ```
-**Grab novoalign**
+<br><br>**Get novoalign:**<br><br>
 Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to <a href="http://www.novocraft.com/support/download/" target="_blank"> Novocraft </a> and click the download button. Navigate to **version 3.07.00**, this software was tested on this specific version but higher versions should work as well. Click the relevent package based on your OS and this should download to your downloads folder. This needs to be copied to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
 
 ```
 tar -xzf novocraft.tar.gz
 
 ```
-**Configure java**
+<br><br>**Configure java:**<br><br>
 This program runs on java 8 and probably needs to be installed. First check the current version:
 ```
 java -version
