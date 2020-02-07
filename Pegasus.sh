@@ -26,13 +26,13 @@ threads="$4"					#amount of cores
 ram="$5"						#amount of ram
 snp_calling="$6" 				#snp calling yes or no
 sv_calling="$7"					#structural variant calling
-#lineage_calling="$8"			#only compatible with H37Rv
-gene_fusions="${8}"				#call gene fusions
-#tree="{$9}"					#get files for tree
-ref_user="${9}"				#reference file
+lineage_calling="$8"			#only compatible with H37Rv
+gene_fusions="${9}"				#call gene fusions
+tree="${$10}"					#get files for tree
+ref_user="${11}"				#reference file
 #ref_novo=${10}					#reference index file for novo.ndx
-regions_of_interest="${10}"		#file to target list
-debug="${11}"					#run in verbose mode
+regions_of_interest="${12}"		#file to target list
+debug="${13}"					#run in verbose mode
 
 if [[ "${debug}" == "TRUE" ]];
 	then 
@@ -105,7 +105,7 @@ if [[ -s "$regions_of_interest" ]];
       
        
 fi
-net_app
+
 
 #set the reference
 if [[ "${ref_user}" == H37Rv ]];  #I want to add a user based reference but will do that later
@@ -122,7 +122,12 @@ if [[ "${ref_user}" == CDC1551 ]];
    ref_novo="${master_dir}/references/CDC1551/CDC1551.ndx"	
 fi
   
-      
+if [[ "${ref_user}" == Marinum ]];  
+   then
+   echo "Marinum M was chosen as a reference" >> "$log"
+   ref="${master_dir}/references/Marinum/M_marinumM.fasta"
+   ref_novo="${master_dir}/references/Marinum/M_marinumM.ndx"	
+fi      
        
 
 
@@ -144,6 +149,7 @@ fi
 source "${master_dir}/Pegasus_functions.sh"
 
 #start the mainloop
+
 while IFS='' read -r sample || [[ -n "$sample" ]];  
 do
 	echo "Starting analysis of ${sample}" >> "$log" 
@@ -181,7 +187,9 @@ do
 	then
 		tree_dir="${out_dir_2}/Tree"
 		mkdir "${tree_dir}"
-    raw_1="${raw_files}/${sample}_R1_001.fastq.gz"
+	fi
+
+    	raw_1="${raw_files}/${sample}_R1_001.fastq.gz"
    	raw_2="${raw_files}/${sample}_R2_001.fastq.gz"
 
 #start with analysis
@@ -225,7 +233,7 @@ do
 	
 		echo "snp calling done" >> "${log}"
 		#tree functions?
-		if [[ "${tree|" == "TRUE" ]];
+		if [[ "${tree}" == "TRUE" ]];
 		then 
 			echo "Drawing files for trees, send through snpTREE" >> "${log}"
 			tree_draw_files
@@ -240,7 +248,7 @@ do
 		delly_bwa &
 		wait 
 		lumpy_delly_isec 
-			if [[ "${gene_fusions}" == "TRUE" ]]; # made gene fusions optional here. Will still do a first pass over the SV calling and call GF if asked for
+			if [[ "${gene_fusions}" == "TRUE" ]];
 			then 
 				gene_fusion_calling
 			fi
@@ -269,7 +277,7 @@ do
 	fi
 
 rm -r "${temp}"	
-done<$files_in
+done < $files_in
 time_end=$(date +%H.%m.%s.%N)
 time_diff=${echo $time_start - $time_end | bc}
 echo "it takes ${time_diff} to execute the pipeline" >> "${log}"
