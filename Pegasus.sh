@@ -125,8 +125,8 @@ fi
 if [[ "${ref_user}" == Marinum ]];  
    then
    echo "Marinum M was chosen as a reference" >> "$log"
-   ref="${master_dir}/references/Marinum/M_marinumM.fasta"
-   ref_novo="${master_dir}/references/Marinum/M_marinumM.ndx"	
+   ref="${master_dir}/reference/Marinum/M_marinumM.fasta"
+   ref_novo="${master_dir}/reference/Marinum/M_marinumM.ndx"	
 fi      
        
 
