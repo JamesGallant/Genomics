@@ -28,7 +28,7 @@ sudoInstaller() {
 echo "downloading packages"
 
 URL=(	"http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.36.zip"
-	"https://github.com/broadinstitute/picard/releases/download/2.21.6/picard.jar"
+	"https://github.com/broadinstitute/picard/releases/download/2.12.2/picard.jar"
 	)
 
 for i in ${URL[@]};
