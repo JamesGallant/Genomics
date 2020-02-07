@@ -122,15 +122,6 @@ if [[ "${ref_user}" == CDC1551 ]];
    ref_novo="${master_dir}/references/CDC1551/CDC1551.ndx"	
 fi
   
-if [[ "${ref_user}" == Marinum ]];  
-   then
-   echo "Marinum M was chosen as a reference" >> "$log"
-   ref="${master_dir}/reference/Marinum/M_marinumM.fasta"
-   ref_novo="${master_dir}/reference/Marinum/M_marinumM.ndx"	
-fi      
-       
-
-
 #set up directories of common fils NB ln-s (link) [[[I think i want to remove this]]]
 if [[ "${snp_calling}" == "TRUE" ]];
   then
