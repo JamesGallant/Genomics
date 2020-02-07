@@ -23,7 +23,10 @@ tar -xzf novocraft.tar.gz
 
 ```
 # Command line usage
-
+remove any trailing \r characters just in case.
+```
+sed -i 's/\r$//' Pegasus.sh
+```
 To see the positional arguments use
  ```
  bash pegasusGui.sh -h
