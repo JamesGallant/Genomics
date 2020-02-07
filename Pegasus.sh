@@ -47,7 +47,7 @@ trim="${master_dir}/programs/Trimmomatic-0.36/trimmomatic-0.36.jar"
 trim_PE="${master_dir}/programs/Trimmomatic-0.36/adapters/TruSeq2-PE.fa"
 TBprofiler_path="${master_dir}/programs/TBProfiler/tb-profiler"
 picard="${master_dir}/programs/picard.jar"
-gatk="${master_dir}/programs/GenomeAnalysisTK.jar" 
+gatk="${master_dir}/programs/GenomeAnalysisTK.jar" #this works on java 1.8 we need gatk-3.8
 lumpy_extract_splitters="${master_dir}/programs/lumpy-sv/scripts/extractSplitReads_BwaMem"
 lumpy_vcftobed="${master_dir}/programs/lumpy-sv/scripts/vcfToBedpe"
 #export PATH=$PATH:"${master_dir}/programs/bwa-0.7.12/"
@@ -122,6 +122,15 @@ if [[ "${ref_user}" == CDC1551 ]];
    ref_novo="${master_dir}/references/CDC1551/CDC1551.ndx"	
 fi
   
+if [[ "${ref_user}" == Marinum ]];  
+   then
+   echo "Marinum M was chosen as a reference" >> "$log"
+   ref="${master_dir}/reference/Marinum/M_marinumM.fasta"
+   ref_novo="${master_dir}/reference/Marinum/M_marinumM.ndx"	
+fi      
+       
+
+
 #set up directories of common fils NB ln-s (link) [[[I think i want to remove this]]]
 if [[ "${snp_calling}" == "TRUE" ]];
   then
