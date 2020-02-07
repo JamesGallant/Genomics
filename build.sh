@@ -12,6 +12,7 @@ if [ $? -eq 0 ]; then
 master_dir="$(pwd "$0")"
 mkdir programs
 program_dir="$master_dir/programs"
+
 #global package installer
 sudoInstaller() {
 	if ! [ -x "$(command -v $1)" ];
@@ -28,7 +29,6 @@ echo "downloading packages"
 
 URL=(	"http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.36.zip"
 	"https://github.com/broadinstitute/picard/releases/download/2.21.6/picard.jar"
-	"https://github.com/broadinstitute/gatk/releases/download/4.1.4.1/gatk-4.1.4.1.zip"
 	)
 
 for i in ${URL[@]};
@@ -36,6 +36,7 @@ do
 	wget -P $master_dir/programs/  $i
 done
 
+mv "$master_dir/GenomeAnalysisTK.jar" "${program_dir}/GenomeAnalsysTK.jar"
 #git installation functions
 #samblaster works
 samblaster() {
@@ -110,7 +111,7 @@ delly() {
 	mkdir $program_dir/delly
 	git clone --recursive "https://github.com/dellytools/delly.git" $program_dir/delly
 	cd $program_dir/delly
-	make 
+	make all
 	cd $master_dir
 	echo "checking sanity of delly"
 	export PATH=$PATH:"${master_dir}/programs/delly/src/"
@@ -166,6 +167,15 @@ svprops() {
 	fi
 }
 
+HTSlib() {
+	cd /usr/bin
+	wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
+	tar -vxjf htslib-1.9.tar.bz2
+	cd htslib-1.9
+	make
+	cd $master_dir
+}
+
 zips() {
 	echo "installing zipped files"
 	cd $program_dir
@@ -180,10 +190,21 @@ zips() {
 
 
 #pip installations
+sudoInstaller "update"
+sudoInstaller "libboost-all-dev"
+sudoInstaller "gcc"
+sudoInstaller "make"
+sudoInstaller "libbz2-dev"
+sudoInstaller "zlib1g-dev"
+sudoInstaller "libncurses5-dev" 
+sudoInstaller "libncursesw5-dev"
+sudoInstaller "liblzma-dev"
+sudoInstaller "cython"
 if ! [ -x "$(command -v svtyper)" ];
 then 
-    "installing svtyper"   
-    pip install git+https://github.com/hall-lab/svtyper.git
+    "installing svtyper"  
+     
+    pip3 install git+https://github.com/hall-lab/svtyper.git
 else
     echo "svtyper found"
 fi
@@ -192,7 +213,6 @@ sudoInstaller "samtools"
 sudoInstaller "bwa" 
 sudoInstaller "bcftools" 
 sudoInstaller "abacas" 
-sudoInstaller "svtyper" 
 sudoInstaller "fastqc" 
 sudoInstaller "tabix" 
 sudoInstaller "sambamba" 
@@ -206,12 +226,19 @@ sudoInstaller "soapdenovo2"
 samblaster
 export PATH=$PATH:"${master_dir}/programs/samblaster"
 lumpy
-wait 
-delly &
-svprops && fg
-wait
+delly 
+svprops
 zips
 
+echo "changing write permissions"
+declare -a arr2=("lumpy-sv" "picard.jar" "trimmomatic-0.36/trimmomatic-0.36.jar" "delly"  "svprops" "samblaster")
+
+#change permissions
+for a in "${arr2[@]}";
+do
+	echo "changing permissions"
+	chmod 777 "$program_dir/${a}"
+done
 
 echo "Build finished"
 
@@ -230,22 +257,22 @@ echo "${GUI}"
 term=$(cat temp.txt | awk '{print $2}')
 echo "${term}"
 
-chmod 755 pegasus.sh
-chmod 755 pegasusGUI.sh
+chmod 755 Pegasus.sh
+chmod 755 PegasusGUI.sh
 
 if [[ "${GUI}" == TRUE ]];
 then
 	echo "Launching gui"
-	./PegasusGUI.sh
+	PegasusGUI.sh
 fi
 
 if [[ "${term}" == TRUE ]];
 then
 	echo "launching terminal"
-	./Pegasus.sh
+	Pegasus.sh
 fi
 
-rm ./temp.txt
+rm temp.txt
 
 exit 0
 
