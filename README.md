@@ -1,4 +1,4 @@
-# Pegaus gene fusions pipeline
+# Pegasus gene fusions pipeline
 Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process. Two versions of pegasus is availible, a command line version and a graphical user interface version. Both these perform the same basic functionality, however the GUI version is more restricted in the methods that can be called.
 
 # Installation
