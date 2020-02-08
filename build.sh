@@ -13,17 +13,7 @@ master_dir="$(pwd "$0")"
 mkdir programs
 program_dir="$master_dir/programs"
 
-#global package installer
-sudoInstaller() {
-	if ! [ -x "$(command -v $1)" ];
-	then
-	    "installing $1"
-	    echo $sudoPW | sudo -S apt -y install $1
-	else
-	    echo "$1 found"
-	fi
-}
-
+source "${master_dir}/Pegasus_functions.sh"
 #wget downloads
 echo "downloading packages"
 
@@ -37,156 +27,6 @@ do
 done
 
 mv "$master_dir/GenomeAnalysisTK.jar" "${program_dir}/GenomeAnalsysTK.jar"
-#git installation functions
-#samblaster works
-samblaster() {
-	echo "Installing samblaster"
-	mkdir $program_dir/samblaster
-	git clone "https://github.com/GregoryFaust/samblaster.git" $program_dir/samblaster
-	cd $program_dir/samblaster
-	make
-	cd $master_dir
-	
-	echo "Sanity checks"
-	export PATH=$PATH:"${master_dir}/programs/samblaster"
-	if ! [ -x "$(command -v samblaster)" ];
-	then 
-	    echo "samblaster installation failed"
-	    echo "Follow these docs: https://github.com/GregoryFaust/samblaster.git"
-	    echo "The files need to be in the programs directory"
-	    
-	    read -s "Would you like to continue the installation? [y/n]: " contInstall
-	    
-	   if [[ $contInstall == "n" || $contInstall == "N" ]];
-	    then
-	    	echo "aborting installation"
-	    	exit 1
-    	    else 
-    	    	echo "moving on to next installation" 
-    	    fi
-	else
-	    echo "samblaster found"
-	fi
-
-}
-
-
-#lumpy-SV
-lumpy() {
-	echo "installing lumpy"
-	mkdir $program_dir/lumpy-sv
-	git clone --recursive "https://github.com/arq5x/lumpy-sv.git" $program_dir/lumpy-sv/
-	cd $program_dir/lumpy-sv
-	export ZLIB_PATH="/usr/lib/x86_64-linux-gnu/"
-	make
-	cd $master_dir
-	echo "checking sanity of Lumpy"
-	export PATH=$PATH:"${master_dir}/programs/lumpy-sv/bin/"
-	if ! [ -x "$(command -v lumpyexpress)" ];
-	then 
-	    echo "lumpy installation failed"
-	    echo "Follow these docs: https://github.com/arq5x/lumpy-sv.git"
-	    echo "The files need to be in the programs directory"
-	    
-	    read -s  "Would you like to continue the installation? [y/n]: " contInstall
-	    
-	   if [[ $contInstall == "n" || $contInstall == "N" ]];
-	    then
-	    	echo "aborting installation"
-	    	exit 1
-    	    else 
-    	    	echo "moving on to next installation" 
-    	    fi
-    	    
-	else
-	    echo "lumpy found"
-	fi
-}
-
-#SOAPdenovo2				
-
-
-#delly works
-delly() {
-	mkdir $program_dir/delly
-	git clone --recursive "https://github.com/dellytools/delly.git" $program_dir/delly
-	cd $program_dir/delly
-	make all
-	cd $master_dir
-	echo "checking sanity of delly"
-	export PATH=$PATH:"${master_dir}/programs/delly/src/"
-	if ! [ -x "$(command -v delly)" ];
-	then 
-	    echo "Delly installation failed"
-	    echo "Follow these docs: https://github.com/dellytools/delly.git"
-	    echo "The files need to be in the programs directory"
-	     
-	    read -s  "Would you like to continue the installation? [y/n]: " contInstall
-	    
-	    if [[ $contInstall == "n" || $contInstall == "N" ]];
-	    then
-	    	echo "aborting installation"
-	    	exit 1
-    	    else 
-    	    	echo "moving on to next installation" 
-    	    fi
-    	    
-	else
-	    echo "delly found"
-	fi
-}
-
-#svprops works
-svprops() {
-	echo "installing svprops"
-	mkdir $program_dir/svprops
-	git clone --recursive "https://github.com/dellytools/svprops.git" $program_dir/svprops
-	cd $program_dir/svprops
-	make 
-	cd $master_dir
-	echo "Sanity checks"
-	export PATH=$PATH:"${master_dir}/programs/svprops/src/"
-	if ! [ -x "$(command -v svprops)" ];
-	then 
-	    echo "svprops installation failed"
-	    echo "Follow these docs: https://github.com/dellytools/svprops.git"
-	    echo "The files need to be in the programs directory"
-	     
-	    read -s  "Would you like to continue the installation? [y/n]: " contInstall
-	    
-	    if [[ $contInstall == "n" || $contInstall == "N" ]];
-	    then
-	    	echo "aborting installation"
-	    	exit 1
-    	    else 
-    	    	echo "moving on to next installation" 
-    	    fi
-    	    
-	else
-	    echo "svprops found"
-	fi
-}
-
-HTSlib() {
-	cd /usr/bin
-	wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
-	tar -vxjf htslib-1.9.tar.bz2
-	cd htslib-1.9
-	make
-	cd $master_dir
-}
-
-zips() {
-	echo "installing zipped files"
-	cd $program_dir
-	zipFiles=$(ls | grep "zip")
-	for i in ${zipFiles[@]};
-	do
-		echo $i
-		unzip $i
-		rm -r $i
-	done
-}
 
 
 #pip installations
@@ -246,7 +86,7 @@ startup=$(yad --item-separator="," --separator="\t" \
 	--title="Pegasus v1.0" \
 	--form \
 	--text="Thank you for downloading Pegasus" \
-	--field="Launch GUI":CHK \
+	--field="Launch GUI(Nightly)":CHK \
 	--field="Launch Terminal":CHK)
 
 echo "${startup}" > temp.txt
@@ -263,13 +103,13 @@ chmod 755 PegasusGUI.sh
 if [[ "${GUI}" == TRUE ]];
 then
 	echo "Launching gui"
-	PegasusGUI.sh
+	bash PegasusGUI.sh
 fi
 
 if [[ "${term}" == TRUE ]];
 then
 	echo "launching terminal"
-	Pegasus.sh
+	bash Pegasus.sh
 fi
 
 rm temp.txt
