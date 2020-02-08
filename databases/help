@@ -34,7 +34,9 @@ usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call
 <ram>				[INT]	<ammount of ram to allocate>
 <call snps>			[BOOL]	<TRUE or FALSE>
 <call sv's>			[BOOL]	<TRUE or FALSE>
+<TB profiler>			[BOOL]	<TRUE or FALSE>
 <call gene fusions>		[BOOL]	<TRUE or FALSE>
-<reference>			[CHAR]	<H37Rv or CDC1551, case sensitive enter exactly>
+<Tree files>			[BOOL]	<TRUE or FALSE>
+<reference>			[CHAR]	<H37Rv, CDC1551, Marinum -- case sensitive, enter exactly>
 <target regions>		[File]	<list of targets, one per line including identifier start and stop> OR FALSE to skip
 <verbose>			[BOOL]	<TRUE or FALSE, default is FALSE>
