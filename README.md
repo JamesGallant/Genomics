@@ -39,7 +39,7 @@ If you have a different version follow these steps to install older java version
 ```
 sudo apt-get install openjdk-8-jre
 ```
-Next switch to the jre-8 version in this case it is option 1:
+Next switch to the jre-8 version in this case it is option 2:
 ```
 sudo update-alternatives --config java
 ```
