@@ -98,7 +98,8 @@ BWA () {
 				-targetIntervals "${temp}/${sample}_bwa_sorted_dedup.bam.list" \
 				-o "${temp}/${sample}_bwa_sorted_dedup_realigned.bam"
          
-         	samtools sort -@ $threads -m "${ram}"g -O "bam" -T "working" -o "${temp}/${sample}_bwa_sorted_dedup_realigned_sorted.bam" "${temp}/${sample}_bwa_sorted_dedup_realigned.bam"
+         	#samtools sort -@ $threads -m "${ram}"g -O "bam" -T "working" -o "${temp}/${sample}_bwa_sorted_dedup_realigned_sorted.bam" "${temp}/${sample}_bwa_sorted_dedup_realigned.bam"
+		samtools sort -o "${temp}/${sample}_bwa_sorted_dedup_realigned_sorted.bam" "${temp}/${sample}_bwa_sorted_dedup_realigned.bam"
 		
 		if [[ -s "${temp}/${sample}_bwa_sorted_dedup_realigned_sorted.bam" ]];
    		then
@@ -146,10 +147,10 @@ novo () {
            		 echo "SAM file has errors" >> "$log"
         	fi
 		
-			samblaster \
-				--addMateTags \
-				-i "${temp}/${sample}_novo_paired.sam" \
-				-o "${temp}/${sample}_novo_paired_sb.sam" 
+		samblaster \
+			--addMateTags \
+			-i "${temp}/${sample}_novo_paired.sam" \
+			-o "${temp}/${sample}_novo_paired_sb.sam" 
 
 
 			#convert SAM into BAM and sort
@@ -191,7 +192,8 @@ novo () {
 				-targetIntervals "${temp}/${sample}_novo_sorted_dedup.bam.list" \
 				-o "${temp}/${sample}_novo_sorted_dedup_realigned.bam"
          
-         	samtools sort -@ $threads -m "${ram}"g -O "bam" -T "working" -o "${temp}/${sample}_novo_sorted_dedup_realigned_sorted.bam" "${temp}/${sample}_novo_sorted_dedup_realigned.bam"
+         	 samtools sort -o "${temp}/${sample}_novo_sorted_dedup_realigned_sorted.bam" "${temp}/${sample}_novo_sorted_dedup_realigned.bam"
+		 #samtools sort -O "bam" -T "working" -o "${temp}/${sample}_novo_sorted_dedup_realigned_sorted.bam" "${temp}/${sample}_novo_sorted_dedup_realigned.bam"
 
 		
 		if [[ -s "${temp}/${sample}_novo_sorted_dedup_realigned_sorted.bam" ]];
