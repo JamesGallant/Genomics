@@ -13,7 +13,7 @@ master_dir="$(pwd "$0")"
 mkdir programs
 program_dir="$master_dir/programs"
 
-source "${master_dir}/Pegasus_functions.sh"
+source "${master_dir}/install_functions.sh"
 #wget downloads
 echo "downloading packages"
 

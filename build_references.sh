@@ -15,7 +15,7 @@ mkdir ${H37Rv_dir} & mkdir ${CDC1551_dir}
 mkdir ${Marinum_dir}
 
 
-source "${master_dir}/Pegasus_functions.sh"
+source "${master_dir}/install_functions.sh"
 
 H37Rv
 CDC1551

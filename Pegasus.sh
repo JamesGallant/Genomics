@@ -47,7 +47,8 @@ trim="${master_dir}/programs/Trimmomatic-0.36/trimmomatic-0.36.jar"
 trim_PE="${master_dir}/programs/Trimmomatic-0.36/adapters/TruSeq2-PE.fa"
 TBprofiler_path="${master_dir}/programs/TBProfiler/tb-profiler"
 picard="${master_dir}/programs/picard.jar"
-gatk="${master_dir}/programs/GenomeAnalysisTK.jar" #this works on java 1.8 we need gatk-3.8
+#this works on java 1.8 we need gatk-3.8
+gatk="${master_dir}/programs/GenomeAnalsysTK.jar" 
 lumpy_extract_splitters="${master_dir}/programs/lumpy-sv/scripts/extractSplitReads_BwaMem"
 lumpy_vcftobed="${master_dir}/programs/lumpy-sv/scripts/vcfToBedpe"
 #export PATH=$PATH:"${master_dir}/programs/bwa-0.7.12/"
@@ -125,8 +126,8 @@ fi
 if [[ "${ref_user}" == Marinum ]];  
    then
    echo "Marinum M was chosen as a references" >> "$log"
-   ref="${master_dir}/reference/Marinum/Marinum.fasta"
-   ref_novo="${master_dir}/reference/Marinum/Marinum.ndx"	
+   ref="${master_dir}/references/Marinum/Marinum.fasta"
+   ref_novo="${master_dir}/references/Marinum/Marinum.ndx"	
 fi      
        
 
