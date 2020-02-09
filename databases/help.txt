@@ -23,7 +23,7 @@
 *	
 *	copyright James Gallant 2017
 ******************************************************************
-IMPORTANT: the software use positional calls so where you add something is important! Call the script from the directory it is in, we source from our main directory. 
+IMPORTANT: the software uses positional calls so where you add something is important! Call the script from the directory it is in, we source from our main directory. 
 
 usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call sv's> <call lineage & drug resistance> <reference> <target regions> <verbose>
 
