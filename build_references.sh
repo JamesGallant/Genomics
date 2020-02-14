@@ -19,7 +19,7 @@ source "${master_dir}/install_functions.sh"
 
 H37Rv
 CDC1551
-Marinum
+
 
 exit 0
 

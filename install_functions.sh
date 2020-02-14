@@ -189,7 +189,7 @@ CDC1551() {
 	
 	gunzip "${CDC1551_dir}/GCA_000008585.1_ASM858v1_genomic.fna.gz"
 	mv "${CDC1551_dir}/GCA_000008585.1_ASM858v1_genomic.fna" "${CDC1551_dir}/CDC1551.fasta"
-	sed -i 's/^.*>.*$/>CDC1551/' "${H37Rv_dir}/CDC1551.fasta"
+	sed -i 's/^.*>.*$/>CDC1551/' "$CDC1551_dir}/CDC1551.fasta"
 	samtools faidx "${CDC1551_dir}/CDC1551.fasta"
 	bwa index "${CDC1551_dir}/CDC1551.fasta"
 	java -jar ${picard} CreateSequenceDictionary R="${CDC1551_dir}/CDC1551.fasta" O="${CDC1551_dir}/CDC1551.dict" 
