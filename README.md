@@ -23,7 +23,7 @@ Novocraft has a free version of **Novoalign** but we cannot distribute it here s
 ```
 cd programs/
 tar -xvf novocraft.tar.gz
-
+cd ../
 ```
 <br><br>**Configure java:**<br>
 This program runs on java 8 and probably needs to be installed. First check the current version:
@@ -58,6 +58,12 @@ n/java       1500      manual mode
 ```
 
 Add the correct selection for java-8, in this case it was two. Double check with ```java -version``` and to switch versions again: ```sudo update-alternatives --config java```
+
+Next we need to create and index the references.
+```
+bash build_references.sh
+```
+
 
 # Command line usage
 remove any trailing \r characters just in case.
