@@ -40,16 +40,18 @@ sudoInstaller "libncurses5-dev"
 sudoInstaller "libncursesw5-dev"
 sudoInstaller "liblzma-dev"
 sudoInstaller "cython"
-if ! [ -x "$(command -v svtyper)" ];
-then 
-    "installing svtyper"  
-     
-    pip3 install git+https://github.com/hall-lab/svtyper.git
-else
-    echo "svtyper found"
-fi
+sudoInstaller "python3-pip"
+sudoInstaller "python-pip"
+
+pip install svtyper
+pip install pysam
+pip install numpy
+
 #multithread processes
-sudoInstaller "samtools" 
+sudoInstaller "samtools"
+sudoInstaller "libcurl4-openssl-dev"
+sudoInstaller "libssl-dev"
+sudoInstaller "vcftools" 
 sudoInstaller "bwa" 
 sudoInstaller "bcftools" 
 sudoInstaller "abacas" 

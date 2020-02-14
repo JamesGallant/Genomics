@@ -771,7 +771,7 @@ gene_fusion_calling () { #genefusions: lumpynovo,dellybwa,lumpybwa,indelsgatk
             			 echo "b=${temp}/${sample}_fusion_${reg_fusionannostart}-${reg_fusionannostop}.bam"
 				} > "${SOAP_targets}/${sample}_${reg_fusionannostart}-${reg_fusionannostop}_SOAP_subset_config.txt"
 
-				soapdenovo-63mer all \
+				SOAPdenovo-63mer all \
 	       	 		-s "${SOAP_targets}/${sample}_${reg_fusionannostart}-${reg_fusionannostop}_SOAP_subset_config.txt" \
 		 		-o "${SOAP_targets}/${sample}_${reg_fusionannostart}-${reg_fusionannostop}_SOAP" \
 		 		-K 31 \
@@ -860,7 +860,7 @@ target_region_process () {  #we could add a choice variable to combine fusion fi
 						} > "${target_soap}/${sample}_config_${name}.txt" 
 
 
-			    			soapdenovo-63mer all \
+			    			SOAPdenovo-63mer all \
 	       	 				-s "${target_soap}/${sample}_config_${name}.txt" \
 		 				-o "${target_soap}/${sample}_${name}_SOAP" \
 		 				-K 31 \

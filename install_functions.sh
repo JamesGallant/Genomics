@@ -171,6 +171,7 @@ H37Rv() {
 	ls ${H37Rv_dir}
 	gunzip "${H37Rv_dir}/GCF_000195955.2_ASM19595v2_genomic.fna.gz"
 	mv "${H37Rv_dir}/GCF_000195955.2_ASM19595v2_genomic.fna" "${H37Rv_dir}/H37Rv.fasta"
+	sed -i 's/^.*>.*$/>H37Rv/' "${H37Rv_dir}/H37Rv.fasta"
 	
 	samtools faidx "${H37Rv_dir}/H37Rv.fasta"
 
@@ -188,6 +189,7 @@ CDC1551() {
 	
 	gunzip "${CDC1551_dir}/GCA_000008585.1_ASM858v1_genomic.fna.gz"
 	mv "${CDC1551_dir}/GCA_000008585.1_ASM858v1_genomic.fna" "${CDC1551_dir}/CDC1551.fasta"
+	sed -i 's/^.*>.*$/>CDC1551/' "${H37Rv_dir}/CDC1551.fasta"
 	samtools faidx "${CDC1551_dir}/CDC1551.fasta"
 	bwa index "${CDC1551_dir}/CDC1551.fasta"
 	java -jar ${picard} CreateSequenceDictionary R="${CDC1551_dir}/CDC1551.fasta" O="${CDC1551_dir}/CDC1551.dict" 
@@ -196,17 +198,5 @@ CDC1551() {
 	cd ${master_dir}
 }
 
-Marinum() {
-	cd ${Marinum_dir}
-	wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/723/425/GCF_000723425.2_E11/GCF_000723425.2_E11_genomic.fna.gz
-	
-	gunzip "${Marinum_dir}/GCF_000723425.2_E11_genomic.fna.gz"
-	mv "${Marinum_dir}/GCF_000723425.2_E11_genomic.fna" "${Marinum_dir}/Marinum.fasta"
-	samtools faidx "${Marinum_dir}/Marinum.fasta"
-	bwa index "${Marinum_dir}/Marinum.fasta"
-	java -jar ${picard} CreateSequenceDictionary R="${Marinum_dir}/Marinum.fasta" O="${Marinum_dir}/Marinum.dict" 
 
-	novoindex "${Marinum_dir}/Marinum.ndx" "${Marinum_dir}/Marinum.fasta"
-	cd ${master_dir}
-}
 ######End#######
