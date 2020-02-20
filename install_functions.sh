@@ -43,7 +43,13 @@ samblaster() {
 
 }
 
-
+#svtyper
+svtyper() {
+	echo "installing lumpy"
+	cd $program_dir
+	git clone --recursive https://github.com/hall-lab/svtyper.git -b v0.1.4
+	cd cd $master_dir
+}
 #lumpy-SV
 lumpy() {
 	echo "installing lumpy"
