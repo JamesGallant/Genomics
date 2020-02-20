@@ -43,7 +43,6 @@ sudoInstaller "cython"
 sudoInstaller "python3-pip"
 sudoInstaller "python-pip"
 
-pip install svtyper
 pip install pysam
 pip install numpy
 
@@ -67,6 +66,7 @@ sudoInstaller "soapdenovo2"
 
 samblaster
 export PATH=$PATH:"${master_dir}/programs/samblaster"
+svtyper
 lumpy
 delly 
 svprops
