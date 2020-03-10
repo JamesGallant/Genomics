@@ -91,7 +91,7 @@ Below are the arguments (`[args]`):
   
  # GUI usage
  ```
- bash PegasusGUI.sh
+ bash PegasusGUI.sh [arg1][arg2][arg3]....[arg13]
  
  ```
  
