@@ -71,17 +71,24 @@ remove any trailing \r characters just in case.
 sed -i 's/\r$//' Pegasus.sh
 sed -i 's/\r$//' Pegasus_functions.sh
 ```
-To see the positional arguments use
- ```
- bash pegasusGui.sh -h
- ```
- ```
- bash Pegasus.sh --help
- ```
- ```
- bash Pegasus.sh
- ```
- 
+Below are the arguments (`[args]`):
+|Position       |argument       |data type                |Long description                                      |
+|---------------|---------------|-------------------------|------------------------------------------------------|
+|1              |`-h`,`--h`     |                         |Display the help menu                                 |
+|1              |raw files      |directory path           |Path to the raw files                                 |
+|2              |samples        |text file                |List of identifiers for the raw files                 |
+|3              |output dir     |directory path           |Path where files should be saved                      |
+|4              |threads        |Interger                 |Number of CPU cores to allocate                       |
+|5              |ram            |Interger                 |Ammount of RAM to allocate                            |
+|6              |call snps      |Boolean (TRUE or FALSE)  |Find single nucleotide polymorphisms, no annotations  |
+|7              |call sv's      |Boolean (TRUE or FALSE)  |Find structural variants, annotations availible       |
+|8              |TBprofiler     |Boolean (TRUE or FALSE)  |**deprecated**                                        |
+|9              |Gene fusions   |Boolean (TRUE or FALSE)  |Find chimeric genes                                   |
+|10             |Tree           |Boolean (TRUE or FALSE)  |Output files to create phylogenetic trees             |
+|11             |Reference      |H37Rv or CDC1551         |Which reference should be used                        |
+|12             |Target regions |text file                |Regions of the genome to analyse                      |
+|13             |Verbose        |Boolean (TRUE or FALSE)  |Run in vebose mode to debug the platform              |
+  
  # GUI usage
  ```
  bash PegasusGUI.sh
@@ -95,21 +102,22 @@ To see the positional arguments use
  Genome1_R1_001_fastq.gz
  Genome2_R2_001_fastq.gz
  ```
- **List of samples**
+ **samples**
  This file should contain the unique identifier only and have one identifier per line, similiar to this.
  ```
  Genome1
  Genome2
  Genome3
  ```
- **Regions of interest for targeted deletions**
+ **Target regions**
  This file stipulates the regions of interest. Our software will go to the positions stipulated here and pull out the specififed region of the genome. Each line should contain a gene name with a 3' and 5' position separted by **tabs**.
  Similiar to this:
- ```
- Gene1  1 100
- Gene5  200 300
- Gene100  1000  2000
- ```
+ |<!-- -->|<!-- -->  |<!-- -->|
+ |--------|----------|--------|
+ |Gene1   |1         |100     |
+ |Gene5   |200       |300     |
+ |Gene100 |1000      |2000    |
+
  The pipeline will iterate through each Gene providided here for each strain provided in the sample list file. This will pull out coverage of the region to which deletions can be inferred. This is not used for gene fusions, gene fusions uses automated detection with split read callers. 
  
  # Output
