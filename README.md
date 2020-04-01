@@ -60,10 +60,11 @@ n/java       1500      manual mode
 
 Add the correct selection for java-8, in this case it was two. Double check with ```java -version``` and to switch versions again: ```sudo update-alternatives --config java```
 
-Next we need to create and index the references.
+Next we need to create and index the references this is done automatically via our gui. Initialise the interface by calling this script:
 ```
 bash build_references.sh
 ```
+![GUI](img.jpg)
 
 
 # Command line usage
