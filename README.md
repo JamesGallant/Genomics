@@ -1,9 +1,10 @@
 # Pegasus gene fusions pipeline
-Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process. Two versions of pegasus is availible, a command line version and a graphical user interface version. Both these perform the same basic functionality, however the GUI version is more restricted in the methods that can be called.
+Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. It is also possible to configure a custom reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process. Two versions of pegasus is availible, a command line version and a graphical user interface version. Both these perform the same basic functionality, however the GUI version is more restricted in the methods that can be called and is currently unstable.
 
 # Installation
-Because of the dependencies installation can be a pain, I have tried to automate as much as possible using build.sh but some files need to be installed to the programs directory. 
+Because of the dependencies installation can be a pain, I have tried to automate as much as possible using build.sh but some files need to be installed to the programs directory. The reference installation is automated and handled with a graphical user interface. 
 <br><br>**Installing the repo:**<br>
+A internet connection is required<br><br>
 Install with git 
 ```
 git clone --recursive https://github.com/JamesGallant/Genomics.git
@@ -18,7 +19,7 @@ cd Genomics
 bash build.sh
 ```
 <br><br>**Get novoalign:**<br>
-Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to <a href="http://www.novocraft.com/support/download/" target="_blank"> Novocraft </a> and click the download button. Navigate to **version 3.07.00**, this software was tested on this specific version but higher versions should work as well. Click the relevent package based on your OS and this should download to your downloads folder. This needs to be copied to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
+Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to <a href="http://www.novocraft.com/support/download/" target="_blank"> Novocraft </a> and click the download button. Navigate to **version 3.07.00**, this software was tested on this specific version but higher versions should work as well. Copy this needs file to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
 
 ```
 cd programs/
