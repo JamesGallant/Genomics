@@ -68,7 +68,7 @@ bash build_references.sh
 ```
 ![GUI](img.jpg)
 
-Click the checkbox to install M. tuberculosis H37Rv and M. tuberculosis CDC1551 as reference files. To add a custom reference, upload the fasta file and annotation file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href=https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857%7CMycobacterium%20tuberculosis%20H37Rv> NCBI annotation file </a>. 
+Click the checkbox to install M. tuberculosis H37Rv and M. tuberculosis CDC1551 as reference files. To add a custom reference, upload the fasta file and annotation file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href="https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857|Mycobacterium%20tuberculosis H37Rv/"> NCBI annotation file </a>. 
 
 # Command line usage
 remove any trailing \r characters just in case.
