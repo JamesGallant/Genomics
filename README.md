@@ -92,7 +92,7 @@ Below are the arguments (`[args]`):
 |10             |Target regions |text file                |Regions of the genome to analyse                      |
 |11             |Verbose        |Boolean (TRUE or FALSE)  |Run in vebose mode to debug the platform              |
   
-
+To run the pipeline add the arguments in order
  ```
  bash Pegasus.sh [arg1][arg2][arg3]....[arg13]
  
