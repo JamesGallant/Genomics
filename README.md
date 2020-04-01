@@ -68,7 +68,7 @@ bash build_references.sh
 ```
 ![GUI](img.jpg)
 
-Click the checkbox to install M. tuberculosis H37Rv and M. tuberculosis CDC1551 as reference files. To add a custom reference, upload the fasta file and annotation file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857%7CMycobacterium%20tuberculosis%20H37Rv> NCBI reference </a>. 
+Click the checkbox to install M. tuberculosis H37Rv and M. tuberculosis CDC1551 as reference files. To add a custom reference, upload the fasta file and annotation file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href=https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857%7CMycobacterium%20tuberculosis%20H37Rv> NCBI annotation file </a>. 
 
 # Command line usage
 remove any trailing \r characters just in case.
@@ -87,12 +87,10 @@ Below are the arguments (`[args]`):
 |5              |ram            |Interger                 |Ammount of RAM to allocate                            |
 |6              |call snps      |Boolean (TRUE or FALSE)  |Find single nucleotide polymorphisms, no annotations  |
 |7              |call sv's      |Boolean (TRUE or FALSE)  |Find structural variants, annotations availible       |
-|8              |TBprofiler     |Boolean (TRUE or FALSE)  |**deprecated**                                        |
-|9              |Gene fusions   |Boolean (TRUE or FALSE)  |Find chimeric genes                                   |
-|10             |Tree           |Boolean (TRUE or FALSE)  |Output files to create phylogenetic trees             |
-|11             |Reference      |H37Rv or CDC1551         |Which reference should be used                        |
-|12             |Target regions |text file                |Regions of the genome to analyse                      |
-|13             |Verbose        |Boolean (TRUE or FALSE)  |Run in vebose mode to debug the platform              |
+|8              |Gene fusions   |Boolean (TRUE or FALSE)  |Find chimeric genes                                   |
+|9              |Reference      |H37Rv or CDC1551         |Which reference should be used                        |
+|10             |Target regions |text file                |Regions of the genome to analyse                      |
+|11             |Verbose        |Boolean (TRUE or FALSE)  |Run in vebose mode to debug the platform              |
   
  # GUI usage
  ```
