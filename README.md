@@ -1,5 +1,5 @@
 # Pegasus gene fusions pipeline
-Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. It is also possible to configure a custom reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process. Two versions of pegasus is availible, a command line version and a graphical user interface version. Both these perform the same basic functionality, however the GUI version is more restricted in the methods that can be called and is currently unstable.
+Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. It is also possible to configure a custom reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process.
 
 # Installation
 Instalation consists of four steps to complete, 1) run the build.sh script, 2) get novoalign from their website, 3) configure Java and 4) configure references. The build.sh script installs most dependencies and can take a while to run. Follow these prompts to install the software on your linux box. 
@@ -92,9 +92,9 @@ Below are the arguments (`[args]`):
 |10             |Target regions |text file                |Regions of the genome to analyse                      |
 |11             |Verbose        |Boolean (TRUE or FALSE)  |Run in vebose mode to debug the platform              |
   
- # GUI usage
+
  ```
- bash PegasusGUI.sh [arg1][arg2][arg3]....[arg13]
+ bash Pegasus.sh [arg1][arg2][arg3]....[arg13]
  
  ```
  
