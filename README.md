@@ -2,7 +2,8 @@
 Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. It is also possible to configure a custom reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process. Two versions of pegasus is availible, a command line version and a graphical user interface version. Both these perform the same basic functionality, however the GUI version is more restricted in the methods that can be called and is currently unstable.
 
 # Installation
-Because of the dependencies installation can be a pain, I have tried to automate as much as possible using build.sh but some files need to be installed to the programs directory. The reference installation is automated and handled with a graphical user interface. 
+Instalation consists of four steps to complete, 1) run the build.sh script, 2) get novoalign from their website, 3) configure Java and 4) configure references. The build.sh script installs most dependencies and can take a while to run. Follow these prompts to install the software on your linux box. 
+
 <br><br>**Installing the repo:**<br>
 A internet connection is required<br><br>
 Install with git 
