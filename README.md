@@ -58,14 +58,16 @@ There are 2 choices for the alternative java (providing /usr/bin/java).
 n/java       1500      manual mode
 ```
 
-Add the correct selection for java-8, in this case it was two. Double check with ```java -version``` and to switch versions again: ```sudo update-alternatives --config java```
+Add the correct selection for java-8, in this case it was two. Double check with ```java -version``` and to switch versions again: 
+```sudo update-alternatives --config java```
 
-Next we need to create and index the references this is done automatically via our gui. Initialise the interface by calling this script:
+Next we need to create and index the references this is done automatically via our gui. It is important to have novoalig installed in the programs directory. Initialise the interface by calling this script:
 ```
 bash build_references.sh
 ```
 ![GUI](img.jpg)
 
+Click the checkbox to install M. tuberculosis H37Rv and M. tuberculosis CDC1551 as reference files. To add a custom reference, upload the fasta file and annotation file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857%7CMycobacterium%20tuberculosis%20H37Rv> NCBI reference </a>. 
 
 # Command line usage
 remove any trailing \r characters just in case.
