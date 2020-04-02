@@ -26,7 +26,7 @@ if [ $? -eq 0 ]; then
 		wget -P $master_dir/programs/  $i
 	done
 
-	mv "$master_dir/GenomeAnalysisTK.jar" "${program_dir}/GenomeAnalsysTK.jar"
+	mv "${master_dir}/databases/GenomeAnalsysTK.jar" "${program_dir}/GenomeAnalsysTK.jar"
 
 
 	#pip installations
@@ -40,8 +40,10 @@ if [ $? -eq 0 ]; then
 	sudoInstaller "libncursesw5-dev"
 	sudoInstaller "liblzma-dev"
 	sudoInstaller "cython"
+	sudoInstaller "cython3"
 	sudoInstaller "python3-pip"
 	sudoInstaller "python-pip"
+	sudoInstaller "autoconf"
 
 	pip install pysam
 	pip install numpy
@@ -74,20 +76,8 @@ if [ $? -eq 0 ]; then
 	svprops
 	zips
 
-	echo "changing write permissions"
-	declare -a arr2=("lumpy-sv" "picard.jar" "trimmomatic-0.36/trimmomatic-0.36.jar" "delly"  "svprops" "samblaster")
-
-	#change permissions
-	for a in "${arr2[@]}";
-	do
-		echo "changing permissions"
-		chmod 777 "$program_dir/${a}"
-	done
 
 	echo "Build finished"
-
-	bash ./build_reference.sh
-
 	exit 0
 
 else
