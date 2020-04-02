@@ -25,7 +25,7 @@
 ******************************************************************
 IMPORTANT: the software uses positional calls so where you add something is important! Call the script from the directory it is in, we source from our main directory. 
 
-usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call sv's> <call lineage & drug resistance> <reference> <target regions> <verbose>
+usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call sv's> <reference> <target regions> <verbose>
 
 <raw files>			[DIR]	<directory with raw fastq files, named sample_R1_001.fastq.gz/_R2_001.fastq.gz>
 <sample names>			[File]	<List of samples, one sample per line>
@@ -34,9 +34,7 @@ usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call
 <ram>				[INT]	<ammount of ram to allocate>
 <call snps>			[BOOL]	<TRUE or FALSE>
 <call sv's>			[BOOL]	<TRUE or FALSE>
-<TB profiler>			[BOOL]	<TRUE or FALSE>
 <call gene fusions>		[BOOL]	<TRUE or FALSE>
-<Tree files>			[BOOL]	<TRUE or FALSE>
-<reference>			[CHAR]	<H37Rv, CDC1551, Marinum -- case sensitive, enter exactly>
+<reference>			[CHAR]	<H37Rv, CDC1551, or your custom reference, check the references folder for options>
 <target regions>		[File]	<list of targets, one per line including identifier start and stop> OR FALSE to skip
 <verbose>			[BOOL]	<TRUE or FALSE, default is FALSE>

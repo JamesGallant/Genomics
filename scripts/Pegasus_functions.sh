@@ -35,6 +35,66 @@ fastqc_2 () {
 }
 
 #align with bwa
+BWA_gatk4 () {
+	echo "Initialising bwa alignment" >> "${log}"
+	#BWA alignment
+	 bwa mem -t "${threads}" \
+		 -c 100 -R "@RG\\tID:${sample}\\tSM:${sample}\\tPL:Illumina" \
+		 -M -T 50 \
+		 "${ref}" \
+		 "${temp}/${sample}_forward_paired.fq.gz" "${temp}/${sample}_reverse_paired.fq.gz" > "${temp}/${sample}_bwa_paired.sam"
+	echo "bwa alingment done" >> "${log}"
+	gatk ValidateSamFile  -I "${temp}/${sample}_bwa_paired.sam" \
+			      -O "${data}/${sample}_bwa_sam_validate.txt" \
+			      -MODE SUMMARY
+
+	if grep -q "No" "${data}/${sample}_bwa_sam_validate.txt" == "No";
+        		then
+           		echo "Sam file is error free" >> "$log"
+        		else
+           		echo "SAM file has errors" >> "$log"
+        fi
+
+	samblaster --addMateTags \
+		-i "${temp}/${sample}_bwa_paired.sam" \
+		-o "${temp}/${sample}_bwa_paired_sb.sam"
+
+	
+	gatk --java-options "-Xmx${ram}g" SortSam -I "${temp}/${sample}_bwa_paired_sb.sam" -O "${temp}/${sample}_bwa_sorted.bam" \
+         	--SORT_ORDER coordinate \
+         	--VALIDATION_STRINGENCY LENIENT
+
+	samtools index "${temp}/${sample}_bwa_sorted.bam"
+
+	gatk --java-options "-Xmx${ram}g" MarkDuplicates -I "${temp}/${sample}_bwa_sorted.bam" \
+							 -O "${temp}/${sample}_bwa_sorted_dedup.bam" \
+							 --VALIDATION_STRINGENCY LENIENT \
+							 --REMOVE_DUPLICATES TRUE \
+							 --ASSUME_SORTED TRUE \
+							 -M "${temp}/${sample}_bwa_sorted_dedup.bam.txt"
+
+	gatk --java-options "-Xmx${ram}g" SortSam -I "${temp}/${sample}_bwa_sorted_dedup.bam" -O "${temp}/${sample}_bwa_sorted_dedup_sorted.bam" \
+         	--SORT_ORDER coordinate \
+         	--VALIDATION_STRINGENCY LENIENT
+
+	samtools index "${temp}/${sample}_bwa_sorted_dedup_sorted.bam"
+	
+	#BQSR
+	#gatk BaseRecalibrator \
+   	#	-I my_reads.bam \
+   	#	-R reference.fasta \
+   	#	--known-sites sites_of_variation.vcf \
+   	#	--known-sites another/optional/setOfSitesToMask.vcf \
+   	#	-O recal_data.table
+
+	#gatk ApplyBQSR \
+   	#	-R reference.fasta \
+   	#	-I input.bam \
+   	#	--bqsr-recal-file recalibration.table \
+   	#	-O output.bam
+
+
+}
 BWA () {
 	echo "Initialising bwa alignment" >> "${log}"
 	#BWA alignment
@@ -424,7 +484,7 @@ intersect_snps_indel () {
 
 			#annotate indels with gene names
 			cut -f2 "${data}/${sample}_high_conf_INDEL.txt" > "${temp}/${sample}_high_conf_INDEL_temp1.txt" 
-			awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_high_conf_INDEL_temp1.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_high_conf_INDEL_annotatedpos_temp2.txt"  
+			awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_high_conf_INDEL_temp1.txt" $anno_DB > "${temp}/${sample}_high_conf_INDEL_annotatedpos_temp2.txt"  
 
 			paste "${data}/${sample}_high_conf_INDEL.txt" "${temp}/${sample}_high_conf_INDEL_annotatedpos_temp2.txt" > "${data}/${sample}_high_conf_INDEL_annotated.txt" 
 
@@ -500,9 +560,9 @@ lumpy_bwa () {
 		cut -f1 "${temp}/${sample}_lumpy_bwa_temp8.txt" > "${temp}/${sample}_lumpy_bwa_tempstart.txt"
 		cut -f2 "${temp}/${sample}_lumpy_bwa_temp8.txt" > "${temp}/${sample}_lumpy_bwa_tempend.txt"
 		
-		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_bwa_tempstart.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_lumpy_bwa_anno_tempstart.txt"
+		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_bwa_tempstart.txt" $anno_DB > "${temp}/${sample}_lumpy_bwa_anno_tempstart.txt"
 
-		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_bwa_tempend.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_lumpy_bwa_anno_tempend.txt"
+		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_bwa_tempend.txt" $anno_DB > "${temp}/${sample}_lumpy_bwa_anno_tempend.txt"
 
 		awk '{print $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7}' "${temp}/${sample}_lumpy_bwa_temp8.txt" > "${temp}/${sample}_lumpy_bwa_temp9.txt" 
 
@@ -584,9 +644,9 @@ lumpy_novo () {
 		cut -f1 "${temp}/${sample}_lumpy_novo_temp8.txt" > "${temp}/${sample}_lumpy_novo_tempstart.txt"
 		cut -f2 "${temp}/${sample}_lumpy_novo_temp8.txt" > "${temp}/${sample}_lumpy_novo_tempend.txt"
 		
-		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_novo_tempstart.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_lumpy_novo_anno_tempstart.txt"
+		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_novo_tempstart.txt" $anno_DB > "${temp}/${sample}_lumpy_novo_anno_tempstart.txt"
 
-		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_novo_tempend.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_lumpy_novo_anno_tempend.txt"
+		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_lumpy_novo_tempend.txt" $anno_DB > "${temp}/${sample}_lumpy_novo_anno_tempend.txt"
 
 		awk '{print $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7}' "${temp}/${sample}_lumpy_novo_temp8.txt" > "${temp}/${sample}_lumpy_novo_temp9.txt" 
 
@@ -648,9 +708,9 @@ delly_bwa () {
 		cut -f1 "${temp}/${sample}_delly_temp9.tab" > "${temp}/${sample}_delly_tempstart.tab" 
 		cut -f2 "${temp}/${sample}_delly_temp9.tab" > "${temp}/${sample}_delly_tempend.tab"
 
-		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_delly_tempstart.tab" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_delly_annotempstart.tab" 
+		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_delly_tempstart.tab" $anno_DB > "${temp}/${sample}_delly_annotempstart.tab" 
 
-		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_delly_tempend.tab" "${master_dir}/databases/fusiondb_anno_sorted.txt" > "${temp}/${sample}_delly_annotempend.tab" 
+		awk 'NR == FNR { x[$1] = $1+0; next; } { for (i in x) { if (x[i] > $1+0 && x[i] < $2+0) { print x[i] "\t" $3 "\t" $4 "\t" $5 } } }' "${temp}/${sample}_delly_tempend.tab" $anno_DB > "${temp}/${sample}_delly_annotempend.tab" 
 		
 		awk '{print $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7}' "${temp}/${sample}_delly_temp9.tab" > "${temp}/${sample}_delly_temp10.tab" 
 		paste "${temp}/${sample}_delly_annotempstart.tab" "${temp}/${sample}_delly_annotempend.tab" "${temp}/${sample}_delly_temp10.tab"  > "${data}/${sample}_delly_bwa_annotated.txt" 
@@ -712,9 +772,9 @@ gene_fusion_calling () { #genefusions: lumpynovo,dellybwa,lumpybwa,indelsgatk
 			cut -f 6 "${chimera_dir}/${sample}_putative_chimeras.txt" > "${temp}/${sample}_fusions_anno_stop.txt" 
 
 			#extract the gene positions
-			grep -f "${temp}/${sample}_fusions_anno_start.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" | awk '{print $1 "\t" $3}' > "${temp}/${sample}_fusions_gene_subset_start.txt" 
+			grep -f "${temp}/${sample}_fusions_anno_start.txt" $anno_DB | awk '{print $1 "\t" $3}' > "${temp}/${sample}_fusions_gene_subset_start.txt" 
 
-			grep -f "${temp}/${sample}_fusions_anno_stop.txt" "${master_dir}/databases/fusiondb_anno_sorted.txt" | awk '{print $1 "\t" $3}' > "${temp}/${sample}_fusions_gene_subset_stop.txt" 
+			grep -f "${temp}/${sample}_fusions_anno_stop.txt" $anno_DB | awk '{print $1 "\t" $3}' > "${temp}/${sample}_fusions_gene_subset_stop.txt" 
 
   			paste "${temp}/${sample}_fusions_gene_subset_start.txt" "${temp}/${sample}_fusions_gene_subset_stop.txt" > "${temp}/${sample}_fusionloop.txt" 
 

@@ -9,7 +9,7 @@ database_dir="${master_dir}/databases"
 
 if  [ "${1}" == manual ];            
     then
-    less "${master_dir}/readme.md"
+    less "${master_dir}/README.md"
 exit 0
 fi
 
@@ -27,13 +27,13 @@ threads="$4"					#amount of cores
 ram="$5"						#amount of ram
 snp_calling="$6" 				#snp calling yes or no
 sv_calling="$7"					#structural variant calling
-lineage_calling="$8"			#only compatible with H37Rv
-gene_fusions="${9}"				#call gene fusions
+#lineage_calling="$8"			#only compatible with H37Rv
+gene_fusions="${8}"				#call gene fusions
 #tree="${$10}"					#get files for tree
-ref_user="${10}"				#reference file
+ref_user="${9}"				#reference file
 #ref_novo=${10}					#reference index file for novo.ndx
-regions_of_interest="${11}"		#file to target list
-debug="${12}"					#run in verbose mode
+regions_of_interest="${10}"		#file to target list
+debug="${11}"					#run in verbose mode
 
 if [[ "${debug}" == "TRUE" ]];
 	then 
@@ -46,7 +46,7 @@ fi
 
 trim="${master_dir}/programs/Trimmomatic-0.36/trimmomatic-0.36.jar"
 trim_PE="${master_dir}/programs/Trimmomatic-0.36/adapters/TruSeq2-PE.fa"
-TBprofiler_path="${master_dir}/programs/TBProfiler/tb-profiler"
+#TBprofiler_path="${master_dir}/programs/TBProfiler/tb-profiler"
 picard="${master_dir}/programs/picard.jar"
 #this works on java 1.8 we need gatk-3.8
 gatk="${master_dir}/programs/GenomeAnalsysTK.jar" 
@@ -162,11 +162,11 @@ do
 		mkdir "${snp_dir}"
 	fi
 
-	if [[ $lineage_calling == "TRUE" ]];
-  	then 
-		lineage_dir="${out_dir_2}/TBprofiler"
-		mkdir "${lineage_dir}"
-	fi
+#	if [[ $lineage_calling == "TRUE" ]];
+#  	then 
+#		lineage_dir="${out_dir_2}/TBprofiler"
+#		mkdir "${lineage_dir}"
+#	fi
 
 	#if [[ "${tree}" == "TRUE" ]];
 	#then
@@ -179,13 +179,13 @@ do
 
 #start with analysis
 #TBprofiler if lineage was requested
-	if [[ $lineage_calling == "TRUE" ]];
-	then 
-		TBprofiler
-	else
-		echo "TBprofiler not initiated, moving on" "${log}"
-
-	fi
+#	if [[ $lineage_calling == "TRUE" ]];
+#	then 
+#		TBprofiler
+#	else
+#		echo "TBprofiler not initiated, moving on" "${log}"
+#
+#	fi
 #stats
 	fastqc_1
 #trim
