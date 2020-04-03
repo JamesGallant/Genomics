@@ -2,31 +2,8 @@
 Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. It is also possible to configure a custom reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process.
 
 # Installation
-Instalation consists of four steps to complete, 1) run the build.sh script, 2) get novoalign from their website, 3) configure Java and 4) configure references. The build.sh script installs most dependencies and can take a while to run. Follow these prompts to install the software on your linux box. 
+Instalation consists of four steps to complete, 1) Confgiure java 2) download the repo and run the build.sh script 3) get novoalign from their website, and 4) configure references. The build.sh script installs most dependencies and can take a while to run. Follow these prompts to install the software on your linux box. 
 
-<br><br>**Installing the repo:**<br>
-A internet connection is required<br><br>
-Install with git 
-```
-git clone --recursive https://github.com/JamesGallant/Genomics.git
-cd Genomics
-bash build.sh
-```
-or download the zip file to your prefered destination and unzip.
-```
-unzip ./Genomics-master.zip
-mv ./Genomics-master ./Genomics
-cd Genomics
-bash build.sh
-```
-<br><br>**Get novoalign:**<br>
-Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to <a href="http://www.novocraft.com/support/download/" target="_blank"> Novocraft </a> and click the download button. Navigate to **version 3.07.00**, this software was tested on this specific version but higher versions should work as well. Copy this needs file to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
-
-```
-cd programs/
-tar -xvf novocraft.tar.gz
-cd ../
-```
 <br><br>**Configure java:**<br>
 This program runs on java 8 and probably needs to be installed. First check the current version:
 ```
@@ -62,7 +39,33 @@ n/java       1500      manual mode
 Add the correct selection for java-8, in this case it was two. Double check with ```java -version``` and to switch versions again: 
 ```sudo update-alternatives --config java```
 
-Next we need to create and index the references this is done automatically via our gui. It is important to have novoalign installed in the programs directory. Initialise the interface by calling this script:
+<br><br>**Installing the repo:**<br>
+A internet connection is required<br><br>
+Install with git and  run build.sh
+```
+git clone --recursive https://github.com/JamesGallant/Genomics.git
+cd Genomics
+bash build.sh
+```
+or download the zip file to your prefered destination and unzip.
+```
+unzip ./Genomics-master.zip
+mv ./Genomics-master ./Genomics
+cd Genomics
+bash build.sh
+```
+The build script will setup the environment on your system as well as gather and compile third party software. Wait till this has finished before installing novoalign.
+
+<br><br>**Get novoalign:**<br>
+Novocraft has a free version of **Novoalign** but we cannot distribute it here so this has to be installed mannually. Navigate to <a href="http://www.novocraft.com/support/download/" target="_blank"> Novocraft </a> and click the download button. Navigate to **version 3.07.00**, this software was tested on this specific version but higher versions should work as well. Copy this needs file to the **programs** folder in the **Genomics** folder and rename to **novocraft.tar.gz**, this naming is important. Once all of this is done, untar the file and were done with novo
+
+```
+cd programs/
+tar -xvf novocraft.tar.gz
+cd ../
+```
+<br><br>**Build the reference files:**<br>
+Next we need to create and index the references this is done automatically via our gui. This sccript will only work if you have already run the build.sh script and installed novoalign. The reference builder can be used multiple times. Initialise the interface by calling this script:
 ```
 bash build_references.sh
 ```
