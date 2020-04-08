@@ -51,6 +51,11 @@ else
 		exit 1
 	fi
 
+	if [[ $addUserRef =~ \.fa$ || $addUserRef =~ \.fna$ ]]; then
+		echo "please give your reference a .fasta extension"
+		exit 1
+	fi
+
 	userRef_dir="${ref_dir}/$userRefName"
 	mkdir $userRef_dir
 	cp $addUserRef $userRef_dir
