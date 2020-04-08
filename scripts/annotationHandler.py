@@ -82,7 +82,7 @@ def _addIntergenicRows(data):
 	return out
 
 
-def mainProcess(annotationFile):
+def mainProcess(annotationFile, outDir):
 	df = _fileReader(filename=annotationFile)
 	df = _keepColumns(data=df)
 	df = _editStrings(data=df, string_to_replace=" ")
@@ -90,17 +90,20 @@ def mainProcess(annotationFile):
 	df = _calculateGeneLength(data=df)
 	df.insert(3, 'ORF', 'CDS')
 	df = _addIntergenicRows(data=df)
-	df.to_csv("AnnotionDB.txt", sep="\t", header=False)
+	df.to_csv(outDir, sep="\t", header=False)
 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Format NCBI annotation files for Pegasus")
 	parser.add_argument('--file', required=True, help="Tabular annotation file of the reference")
+	parser.add_argument('--out', required=True, help="output_directory")
 	args = parser.parse_args()
+	
 	ANNOTATIONFILE = args.file
+	OUTDIR = args.out
 
 	
-	mainProcess(annotationFile=ANNOTATIONFILE)
+	mainProcess(annotationFile=ANNOTATIONFILE, outDir=OUTDIR)
 
 
 
