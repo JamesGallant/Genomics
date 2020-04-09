@@ -52,6 +52,7 @@ if [ $? -eq 0 ]; then
 
 	#multithread processes
 	sudoInstaller "samtools"
+	sudoInstaller "bedtools"
 	sudoInstaller "libcurl4-openssl-dev"
 	sudoInstaller "libssl-dev"
 	sudoInstaller "vcftools" 
