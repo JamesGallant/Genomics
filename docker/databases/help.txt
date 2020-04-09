@@ -1,0 +1,37 @@
+
+*************************************************************************
+	This software is intended for academic use. It is free to use	
+	modify or distribute for academic purposes and not intended 	
+	for commercial use.						
+									
+	Version: 0.5							
+									
+	Creators: James Gallant		
+	contact:  jgallant@sun.ac.za					
+									
+	Principal investigators: Prof. S. Sampson			
+				 Prof. W. Bitter				
+	Companies: Stellenbosch University 
+		   Vrije Universiteit Amsterdam
+
+	This is a next generation sequencing data processing pipeline
+	for Illumina reads. The software is intended for use with 
+	M. tuberculosis genomes.
+			
+	Main features: snp calling, SV calling, drug resistance, 
+		       lineages, gene fusions and targeted analysis
+*	
+*	copyright James Gallant 2017
+******************************************************************
+IMPORTANT: the software uses positional calls so where you add something is important! Call the script from the directory it is in, we source from our main directory. 
+
+usage: <raw files> <sample names> <output dir> <threads> <ram> <call snps> <call sv's> <reference> <target regions> <verbose>
+
+<raw files>			[DIR]	<directory with raw fastq files, named sample_R1_001.fastq.gz/_R2_001.fastq.gz>
+<sample names>			[File]	<List of samples, one sample per line>
+<output dir>			[DIR]	<output directory>
+<threads>			[INT]	<ammount of cores to allocate>
+<ram>				[INT]	<ammount of ram to allocate>
+<call gene fusions>		[BOOL]	<TRUE or FALSE>
+<reference>			[CHAR]	<H37Rv, CDC1551, or your custom reference, check the references folder for options>
+<verbose>			[BOOL]	<TRUE or FALSE, default is FALSE>
