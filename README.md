@@ -151,7 +151,7 @@ bash build_references.sh
 
 Click the checkbox to install M. tuberculosis H37Rv and M. tuberculosis CDC1551 as reference files. To add a custom reference, upload the fasta file and annotation file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href="https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857|Mycobacterium%20tuberculosis H37Rv/"> NCBI annotation file </a>. 
 
-# Command line usage
+## Command line usage
 remove any trailing \r characters just in case.
 ```
 sed -i 's/\r$//' Pegasus.sh
@@ -179,7 +179,7 @@ To run the pipeline add the arguments in order
  
  ```
  
- # file requirements:
+ ## file requirements:
  **Raw files**
  These files need a unique identifier following by *R1_001.fastq.gz* for forward file and *R2_001_fastq.gz* for the reverse raw file. It should looks something similiar to this:
  ```
@@ -204,7 +204,7 @@ To run the pipeline add the arguments in order
 
  The pipeline will iterate through each Gene providided here for each strain provided in the sample list file. This will pull out coverage of the region to which deletions can be inferred. This is not used for gene fusions, gene fusions uses automated detection with split read callers. 
  
- # Output
+ ## Output
  **Single nucleotide polymorphisms**
  This is not really the idea behind this software but can be done anyway, although these won't be annotated only gene coordinates will be provided in vcf format.
  
