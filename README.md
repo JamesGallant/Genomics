@@ -1,7 +1,85 @@
 # Pegasus gene fusions pipeline
-Pegausus deletion caller for Illumina short read sequencing files currently compatible with M. tuberculosis. This software is developed for use in the ubuntu distribution of linux. This pipeline can be used to detect deletions and gene fusions in the genomes of M. tuberculosis using either M. tuberculosis H37Rv or CDC1551 as a reference. It is also possible to configure a custom reference. The pipeline is implemented in BASH and is built using third party libraries to complete the various steps of the assembly process.
+Pegausus deletion and gene fusion caller for Illumina short read sequencing files currently compatible with M. tuberculosis, however it can be configured for other bacteria. The preferred method to use this software is with the docker container, which specifically detects gene fusions. Thus the docker container has less functionality than building the program from source but is the most stable and condense version.
 
-# Installation
+# Docker
+This implementation is a minimal version of Pegasus focussed on gene fusions and availible as a docker container. Everything needed is saved within the container and thus no installations are required. Furthermore this container can be used wherever docker is availible.  The container is preconfigured to work with M. tuberculosis H37Rv and CDC1551 as references however other genomes can be configured as well. Thi
+<br>
+
+To use the docker container pull it from docker hub https://hub.docker.com/r/jamesgallant/pegasus
+<br>
+on linux:
+```
+sudo docker pull jamesgallant/pegasus
+```
+Prepare your files by creating a directory that includes raw illumina files and a file listing each sample line by line. The illumina files require the following naming convention: mysample1_R1_001.fastq.gz, mysample1_R2_001.fastq.gz and the sample file should look like this as an example for three samples:
+```
+mysample1
+mysample2
+mysample3
+````
+Run the container and mount the directory containing your illumina files and samples text file. Remeber that the paths need to be absolute to connect the directories between your host system and the container. The host system and the docker system is separated by a **:**. In the example below myfiles would be the directory to be connected.
+
+```
+sudo run docker -v /home/user/path/to/myfiles:/home/pegasus/myfiles -it jamesgallant/pegasus
+ls
+```
+You are now in the container and should see all the files availible as well as your **myfiles** directory. The rest of the docker section handles commands in the container
+## Running the pipeline
+Make a output directory in your mounted volume 
+```
+mkdir ./myfiles/out
+```
+Run the pipeline by calling the script and adding the positional arguments.
+```
+bash Pegasus.sh
+```
+|Position       |argument       |data type                |Long description                                      |
+|---------------|---------------|-------------------------|------------------------------------------------------|
+|1              |`-h`,`--h`     |                         |Display the help menu                                 |
+|1              |raw files      |directory path           |Path to the raw files                                 |
+|2              |samples        |text file                |List of identifiers for the raw files                 |
+|3              |output dir     |directory path           |Path where files should be saved                      |
+|4              |threads        |Interger                 |Number of CPU cores to allocate                       |
+|5              |ram            |Interger                 |Ammount of RAM to allocate                            |
+|6              |Gene fusions   |Boolean (TRUE or FALSE)  |Find chimeric genes                                   |
+|7              |Reference      |H37Rv or CDC1551         |Which reference should be used                        |
+|8             |Verbose        |Boolean (TRUE or FALSE)  |Run in vebose mode to debug the platform              |
+
+## output
+The main outputs are in the results folder for each sample. The results folder contains the bam files as well as the putative chimeras for that sample. Directories for each potential chimera is also created which contains the fasta of the multigene deletion as well as a denovo assembled consensus sequence in the .NoNs.fasta file. This consensus sequence can be used in programs such as ORF finder to check for six frame tranlsations.
+
+## custom reference
+It is possible to configure your own reference with some caviats. The detection pipeline is not built to function with plasmids so remove any plasmids from the reference fasta file. Make sure the fasta file is named .fasta and not .fna or .fa. Also unzip the reference file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href="https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857|Mycobacterium%20tuberculosis H37Rv/"> NCBI annotation file </a>. 
+<br>
+Add these files to the folder used to import data into the docker container. and run the following script and with the arguments.
+
+```
+bash build_references.sh [arg 1] [arg 2] [arg 3]
+```
+These are the accepted positional arguments:
+|positition |arg              |dtype     |description                              |
+|-----------|-----------------|----------|-----------------------------------------|
+|1          |custom ref       |filepath  |path toreference file in .fasta format   |
+|2          |annotation file  |filepath  |Tabular annotation file from NCBI        |
+|3          |name of reference|char      |Name of the bacteria, eg. Salmonella     |
+
+This will configure your reference and can be verified by checking the reference foloder for a new directory with the name provided.
+
+```
+cd ./references
+ls
+```
+# Building from source
+Building from source command line version is stable and has similar function to the docker version however some additional features are availible. This version has dependencies which may cause it to be unstable at times and therefore the docker version is favoured. 
+<br>
+<br>
+These features are availible:
++ Gui for reference building
++ de novo assembly for target regions
++ structural variant detection
++ SNP detection (not annotated)
+
+## Installation
 Instalation consists of four steps to complete, 1) Confgiure java 2) download the repo and run the build.sh script 3) get novoalign from their website, and 4) configure references. The build.sh script installs most dependencies and can take a while to run. Follow these prompts to install the software on your linux box. 
 
 <br><br>**Configure java:**<br>
