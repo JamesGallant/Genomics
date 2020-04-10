@@ -1,5 +1,6 @@
 #!/bin/bash
 master_dir="$(pwd "$0")"
+export PATH=$PATH:"${master_dir}/programs/novocraft"
 database_dir="${master_dir}/databases"
 if [[ "${1}" == -h || "${1}" == --help || "${1}" == "" ]];
 	then
@@ -39,7 +40,7 @@ else
 	fi
 	
 	if [[ $addUserRef =~ \.fa$ || $addUserRef =~ \.fna$ ]]; then
-		echo "please give your reference a .fasta extension"
+		echo "your file, $addUserRef, has a .fa/.fna extension. Please rename to .fasta"
 		exit 1
 	fi
 
@@ -66,8 +67,6 @@ else
 	
 	
 fi
-
-rm temp.txt
 
 exit 0
 
