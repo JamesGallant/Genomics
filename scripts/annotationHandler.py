@@ -90,7 +90,7 @@ def mainProcess(annotationFile, outDir):
 	df = _calculateGeneLength(data=df)
 	df.insert(3, 'ORF', 'CDS')
 	df = _addIntergenicRows(data=df)
-	df.to_csv(outDir, sep="\t", header=False)
+	df.to_csv(outDir, sep="\t", header=False, index=False)
 
 
 if __name__ == '__main__':
