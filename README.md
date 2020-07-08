@@ -1,7 +1,6 @@
 # Pegasus gene fusions pipeline
-Pegausus deletion and gene fusion caller for Illumina short read sequencing files currently compatible with M. tuberculosis, however it can be configured for other bacteria. The preferred method to use this software is with the docker container, which specifically detects gene fusions. Thus the docker container has less functionality than building the program from source but is the most stable and condense version. To site the Pegasus pipeline please see our [manuscript](https://academic.oup.com/nargab/article/2/2/lqaa033/5838823) in NAR Genomics and Bioinformatics. 
+Pegausus deletion and gene fusion caller for Illumina short read sequencing files currently compatible with M. tuberculosis, however it can be configured for other bacteria. The preferred method to use this software is with the docker container, which specifically detects gene fusions. Thus the docker container has less functionality than building the program from source but is the most stable and condense version. To cite the Pegasus pipeline please see our manuscript: https://doi.org/10.1093/nargab/lqaa033 
 
-# Docker
 This implementation is a minimal version of Pegasus focussed on gene fusions and availible as a docker container. Everything needed is saved within the container and thus no installations are required. Furthermore this container can be used wherever docker is availible.  The container is preconfigured to work with M. tuberculosis H37Rv and CDC1551 as references however other genomes can be configured as well. Thi
 <br>
 
