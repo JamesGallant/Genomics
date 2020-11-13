@@ -1,7 +1,7 @@
 # Pegasus gene fusions pipeline
 Pegausus deletion and gene fusion caller for Illumina short read sequencing files currently compatible with M. tuberculosis, however it can be configured for other bacteria. The preferred method to use this software is with the docker container, which specifically detects gene fusions. Thus the docker container has less functionality than building the program from source but is the most stable and condense version. To cite the Pegasus pipeline please see our manuscript: https://doi.org/10.1093/nargab/lqaa033 
 
-This implementation is a minimal version of Pegasus focussed on gene fusions and availible as a docker container. Everything needed is saved within the container and thus no installations are required. Furthermore this container can be used wherever docker is availible.  The container is preconfigured to work with M. tuberculosis H37Rv and CDC1551 as references however other genomes can be configured as well. Thi
+This implementation is a minimal version of Pegasus focussed on gene fusions and availible as a docker container. Everything needed is saved within the container and thus no installations are required. Furthermore this container can be used wherever docker is available.  The container is preconfigured to work with M. tuberculosis H37Rv and CDC1551 as references however other genomes can be configured as well.
 <br>
 
 To use the docker container pull it from docker hub https://hub.docker.com/r/jamesgallant/pegasus
@@ -19,7 +19,7 @@ mysample3
 Run the container and mount the directory containing your illumina files and samples text file. Remeber that the paths need to be absolute to connect the directories between your host system and the container. The host system and the docker system is separated by a **:**. In the example below myfiles would be the directory to be connected.
 
 ```
-sudo run docker -v /home/user/path/to/myfiles:/home/pegasus/myfiles -it jamesgallant/pegasus
+sudo docker run -v /home/user/path/to/myfiles:/home/pegasus/myfiles -it jamesgallant/pegasus
 ls
 ```
 You are now in the container and should see all the files availible as well as your **myfiles** directory. The rest of the docker section handles commands in the container
