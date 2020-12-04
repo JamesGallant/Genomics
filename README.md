@@ -48,7 +48,7 @@ bash Pegasus.sh
 The main outputs are in the results folder for each sample. The results folder contains the bam files as well as the putative chimeras for that sample. Directories for each potential chimera is also created which contains the fasta of the multigene deletion as well as a denovo assembled consensus sequence in the .NoNs.fasta file. This consensus sequence can be used in programs such as ORF finder to check for six frame tranlsations.
 
 ## custom reference
-It is possible to configure your own reference with some caviats. The detection pipeline is not built to function with plasmids so remove any plasmids from the reference fasta file. Make sure the fasta file is named .fasta and not .fna or .fa. Also unzip the reference file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href="https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857|Mycobacterium%20tuberculosis H37Rv/"> NCBI annotation file </a>. 
+It is possible to configure your own reference with some caveats. The detection pipeline is not built to function with plasmids so remove any plasmids from the reference fasta file. Make sure the fasta file is named .fasta and not .fna or .fa. Also unzip the reference file. Use NCBI's tabular output for the annotation file, other formats are not accepted. see and example here: <a href="https://www.ncbi.nlm.nih.gov/genome/browse/#!/proteins/166/159857|Mycobacterium%20tuberculosis H37Rv/"> NCBI annotation file </a>. 
 <br>
 Add these files to the folder used to import data into the docker container. and run the following script and with the arguments.
 
