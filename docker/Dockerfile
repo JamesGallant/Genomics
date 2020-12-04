@@ -39,7 +39,6 @@ RUN apt-get -qqy install libssl-dev -y
 RUN apt-get -qqy install bwa -y
 RUN apt-get -qqy install bcftools -y
 RUN apt-get -qqy install abacas -y
-RUN apt-get -qqy install fastqc -y 
 RUN apt-get -qqy install tabix -y
 RUN apt-get -qqy install sambamba -y 
 RUN apt-get -qqy install g++ -y

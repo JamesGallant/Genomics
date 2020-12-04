@@ -150,11 +150,11 @@ do
    	raw_2="${raw_files}/${sample}_R2_001.fastq.gz"
 
 
-	fastqc_1
+	#fastqc_1
 #trim
 	trimmomatic
 #stats
-	fastqc_2
+	#fastqc_2
 
 #done with initial analysis, move on to alingments
 #use multiprocessing
