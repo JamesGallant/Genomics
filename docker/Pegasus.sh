@@ -125,6 +125,12 @@ source "${master_dir}/scripts/Pegasus_functions.sh"
 
 while IFS='' read -r sample || [[ -n "$sample" ]];  
 do
+	if [[ ${sample} == "" ]];
+	then
+		echo "no sample names detected"
+		break
+	fi
+
 	echo "Starting analysis of ${sample}" >> "$log" 
     	mkdir "${out_dir}/${sample}"
     	out_dir_2="${out_dir}/${sample}"
@@ -187,4 +193,6 @@ do
 	
 rm -r "${temp}"	
 done < $files_in
+
+echo "Pegasus executed successfully" 
 exit 0

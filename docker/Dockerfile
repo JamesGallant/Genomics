@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 MAINTAINER James Gallant <jgallant@sun.ac.za>
-
+ARG DEBIAN_FRONTEND=noninteractive
 #main
 RUN apt-get -qqy update -y
 RUN apt-get -qqy install openjdk-8-jre -y
@@ -46,6 +46,7 @@ RUN apt-get -qqy install cmake -y
 RUN apt-get -qqy install gawk -y 
 RUN apt-get -qqy install gnuplot-nox -y
 RUN apt-get -qqy install soapdenovo2 -y
+RUN apt-get -qqy install r-base
 
 WORKDIR /home/pegasus
 
